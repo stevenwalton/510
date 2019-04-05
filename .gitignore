@@ -5,7 +5,7 @@
 
 # Normal
 *.sw?
-tags
+tags*
 CMakeFiles
 CMakeCache.txt
 *.cmake
