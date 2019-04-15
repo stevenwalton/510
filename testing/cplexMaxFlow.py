@@ -1,4 +1,4 @@
-# Max Flow example
+# Max Flow example from slides
 
 # Flow moves to the right
 #      2
