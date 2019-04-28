@@ -1,0 +1,60 @@
+\documentclass[12pt,letter]{article}
+\usepackage{geometry}\geometry{top=0.75in}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{xcolor}	% Color words
+\usepackage{cancel}	% Crossing parts of equations out
+\usepackage{tikz}    	% Drawing 
+\usepackage{pgfplots}   % Other plotting
+\usepgfplotslibrary{colormaps,fillbetween}
+\usepackage{placeins}   % Float barrier
+\usepackage{hyperref}   % Links
+\usepackage{tikz-qtree} % Trees
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+%\tikzset{
+%    treenode/.style = {shape=rectangle, rounded corners, draw, align=center}
+%    root/.style     = {treenode, font=\Large}
+%    env/.style      = {treenode, font=\ttyfamily\normalsize},
+%    dummy/.style    = {circle,draw}
+%}
+
+%\tikzset{every tree node/.style={circle,align=center, anchor=west, grow=right}
+%	}
+\tikzset{every tree node/.style={align=center,minimum width=2em},%, draw},%, circle},
+	 grow=right,
+	 level distance=1.75cm}
+
+% Don't indent
+\setlength{\parindent}{0pt}
+% Function to replace \section with a problem name specifically formatted
+\newcommand{\problem}[1]{\vspace{3mm}\Large\textbf{{Problem {#1}\vspace{3mm}}}\normalsize\\}
+% Formatting function, like \problem
+\newcommand{\ppart}[1]{\vspace{2mm}\large\textbf{\\Part {#1})\vspace{2mm}}\normalsize\\}
+% Formatting 
+\newcommand{\condition}[1]{\vspace{1mm}\textbf{{#1}:}\normalsize\\}
+
+\begin{document}
+\title{CIS 510 Assignment 1}
+\author{Steven Walton}
+\maketitle
+\problem{1}
+Implement the MILP to compute an SSE using Cplex.
+\\
+Instrcution: the input of your program is two CSV files: \textit{param.csv} and
+\textit{payoff.csv}. The format of the \textit{param.csv} file is 
+\textit{num\_of\_targets, number\_of\_defender\_resources}. In the \textit{payoff.csv} file
+each line consists of five numbers: \textit{target\_id, def\_payoff\_cov, 
+def\_payoff\_uncover,att\_payoff\_cov, att\_payoff\_unciver}. The \textbf{output}
+of your program is a CSV file named \textit{SSE.csv}. Each line of the output file 
+is in the format of \textit{target\_id, def\_coverage\_probability}. A sample
+of the three files are provided. 
+\\
+Submission must include: (i) source codes; (ii) documentary including description
+of your program and instructions to run it. Your program will be tested based on
+different games.
+
+
+\end{document}
