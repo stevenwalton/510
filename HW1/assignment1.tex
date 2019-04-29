@@ -146,7 +146,7 @@ And thus we have a result of
 \begin{figure*}[h!]
 \centering
 \begin{tabular}{c c c}
-    $x=\frac{8}{19}$ & $y=\frac{10}{19}$ & $z=\frac{1}{19}$
+    $x=\frac{8}{19}$, & $y=\frac{10}{19}$, & $z=\frac{1}{19}$
 \end{tabular}
 \end{figure*}
 Which we can see that the sum here is 1.
@@ -174,7 +174,7 @@ Thus we get the result
 \begin{figure*}[h!]
 \centering
 \begin{tabular}{c c c c}
-    $x=\frac{24}{39}$ & $y=\frac{10}{13}$ & $z=\frac{7}{13}$ & $w=\frac{1}{13}$
+    $x=\frac{24}{39}$, & $y=\frac{10}{13}$, & $z=\frac{7}{13}$, & $w=\frac{1}{13}$
 \end{tabular}
 \end{figure*}
 Here we can see that the sum is 2 and we are done. 
@@ -190,9 +190,175 @@ Again we don't have to start over. We can start right here
 \begin{figure*}[h!]
 \centering
 \begin{tabular}{c c c c}
-    $x=\frac{28}{39}$ & $y=\frac{35}{39}$ & $z=\frac{31}{39}$ & $w=\frac{23}{39}$
+    $x=\frac{28}{39}$, & $y=\frac{35}{39}$, & $z=\frac{31}{39}$, & $w=\frac{23}{39}$
 \end{tabular}
 \end{figure*}
 Checking that the sum is 3 we can verify that we are done.
+
+\ppart{2}
+oger has invited Caleb to his party. Roger must choose whether or not to hire a
+clown. Simultaneously, Caleb must decide whether or not to go the party. Caleb 
+likes Roger but he hates clowns. Caleb’s payoff from going to the party is 4 if 
+there is no clown, but 0 if there is a clown there. Caleb’s payoff from not going 
+to the party is 3 if there is no clown at the party, but 1 if there is a clown 
+at the party. Roger likes clowns (he especially likes Caleb’s reaction to them but
+does not like paying for them). Roger’s payoff if Caleb comes to the party is 4 
+if there is no clown, but 8 − x if there is a clown (x is the cost of a clown). 
+Roger’s payoff if Caleb does not come to the party is 2 if there is no clown, 
+but 3 − x if there is a clown there.
+\\
+1. Write down the payoff matrix of this game
+\\
+2. Find any dominated strategies and the Nash Equilibrium of the game (with
+explanation) when (i) $x=0$; (ii) $x=2$; (iii) $x=3$; (iv) $x=5$.
+\\
+\large\textbf{Solution}\normalsize
+\\
+Let's summarize first:
+\\
+Action sets:
+\begin{align*}
+	Roger_{action\_set} &= \{clown, \neg clown\} \\
+	Caleb_{action\_set} &= \{go, \neg go\} 
+\end{align*}
+Payoff:
+\begin{align*}
+	Caleb(go | \neg clown) &= 4 \\
+	Caleb(go | clown) &= 0 \\
+	Caleb(\neg go | \neg clown) &= 3 \\
+	Caleb(\neg go | clown) &= 1 \\
+	Roger(Caleb(go) | \neg clown) &= 4 \\
+	Roger(Caleb(go) | clown) &= 8 - x \\
+	Roger(Caleb(\neg go) | \neg clown) &= 2 \\
+	Roger(Caleb(\neg go) | clown) &= 3 - x
+\end{align*}
+Where $x$ is the cost of the clown
+\\
+We can now easily write the payoff matrix. We order the payoff as $(Roger,Caleb)$
+\begin{figure*}[h]
+\centering
+\begin{tabular}{|c|c|c|}
+	\hline
+	& go & $\neg$ go\\
+	\hline
+	clown & $(8-x,0)$ & $(3-x,1)$\\
+	\hline
+	$\neg$ clown & $(4,4)$ & $(2,3)$\\
+	\hline
+\end{tabular}
+\end{figure*}
+\\
+(i)\\
+Now let's let $x=0$ and find the Nash Equilibrium
+\begin{figure*}[h]
+\centering
+\begin{tabular}{|c|c|c|}
+	\hline
+	& go & $\neg$ go\\
+	\hline
+	clown & $(8,0)$ & $(3,1)$\\
+	\hline
+	$\neg$ clown & $(4,4)$ & $(2,3)$\\
+	\hline
+\end{tabular}
+\end{figure*}
+If $Roger(clown)$ then Caleb's best decision is to not go, gaining utility of 1.
+If $Roger(\neg clown)$ then Caleb's best decision is to go, gaining utility of 4.
+We'll create a small table of expected utilities
+\begin{figure*}[h!]
+\centering
+\begin{tabular}{c c|c c}
+	& Roger & Caleb\\
+	\hline
+	clown & 12 & go & 4\\
+	$\neg$ clown & 6 & $\neg$ go & 4
+\end{tabular}
+\end{figure*}
+\FloatBarrier
+$\therefore$ Roger should get a clown and Caleb should not go. This is a 
+weakly dominating strategy.
+\\
+\\
+(ii)\\
+Now let's let $x=2$ and find the Nash Equilibrium
+\begin{figure*}[h!]
+\centering
+\begin{tabular}{|c|c|c|}
+	\hline
+	& go & $\neg$ go\\
+	\hline
+	clown & $(6,0)$ & $(1,1)$\\
+	\hline
+	$\neg$ clown & $(4,4)$ & $(2,3)$\\
+	\hline
+\end{tabular}
+\end{figure*}
+\begin{figure*}[h!]
+\centering
+\begin{tabular}{c c|c c}
+	& Roger & Caleb\\
+	\hline
+	clown & 7 & go & 4\\
+	$\neg$ clown & 6 & $\neg$ go & 4
+\end{tabular}
+\end{figure*}
+\FloatBarrier
+$\therefore$ the result is the same, including dominance.
+\\
+\\
+(iii)\\
+Now let's let $x=3$ and find the Nash Equilibrium
+\begin{figure*}[h!]
+\centering
+\begin{tabular}{|c|c|c|}
+	\hline
+	& go & $\neg$ go\\
+	\hline
+	clown & $(5,0)$ & $(0,1)$\\
+	\hline
+	$\neg$ clown & $(4,4)$ & $(2,3)$\\
+	\hline
+\end{tabular}
+\end{figure*}
+\begin{figure*}[h!]
+\centering
+\begin{tabular}{c c|c c}
+	& Roger & Caleb\\
+	\hline
+	clown & 5 & go & 4\\
+	$\neg$ clown & 6 & $\neg$ go & 4
+\end{tabular}
+\end{figure*}
+\FloatBarrier
+$\therefore$ Roger shouldn't get a clown and Caleb should go. Still weakly 
+dominating because Caleb is indifferent.
+\\
+\\
+(iv)\\
+Now let's let $x=5$ and find the Nash Equilibrium
+\begin{figure*}[h!]
+\centering
+\begin{tabular}{|c|c|c|}
+	\hline
+	& go & $\neg$ go\\
+	\hline
+	clown & $(3,0)$ & $(-2,1)$\\
+	\hline
+	$\neg$ clown & $(4,4)$ & $(2,3)$\\
+	\hline
+\end{tabular}
+\end{figure*}
+\begin{figure*}[h!]
+\centering
+\begin{tabular}{c c|c c}
+	& Roger & Caleb\\
+	\hline
+	clown & 1 & go & 4\\
+	$\neg$ clown & 6 & $\neg$ go & 4
+\end{tabular}
+\end{figure*}
+\FloatBarrier
+$\therefore$ Roger really shouldn't get a clown and Caleb should go. Similarly 
+weakly dominating.
 
 \end{document}
