@@ -68,7 +68,6 @@ def solve(targets,
     # Constraints 3+
     for t in range(len(targets)):
         s = "con"+str(t+2)
-        #s = str(t1) + "_" + str(t2)
         constraints_names.append(s)
         d - ()
         constraint = [[],[]]
