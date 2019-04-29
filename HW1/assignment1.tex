@@ -13,6 +13,7 @@
 \usepackage{tikz-qtree} % Trees
 \usepackage{graphicx}
 \usepackage{subcaption}
+\usepackage{multicol}
 
 %\tikzset{
 %    treenode/.style = {shape=rectangle, rounded corners, draw, align=center}
@@ -33,6 +34,7 @@
 \newcommand{\problem}[1]{\vspace{3mm}\Large\textbf{{Problem {#1}\vspace{3mm}}}\normalsize\\}
 % Formatting function, like \problem
 \newcommand{\ppart}[1]{\vspace{2mm}\large\textbf{\\Part {#1})\vspace{2mm}}\normalsize\\}
+\newcommand{\documentation}[1]{\vspace{2mm}\large\textbf{\\Documentation{#1}\vspace{2mm}}\normalsize\\}
 % Formatting 
 \newcommand{\condition}[1]{\vspace{1mm}\textbf{{#1}:}\normalsize\\}
 
@@ -55,6 +57,78 @@ of the three files are provided.
 Submission must include: (i) source codes; (ii) documentary including description
 of your program and instructions to run it. Your program will be tested based on
 different games.
+
+\documentation{}
+Note: This code uses Cplex, which does not work on python 3.7. This code was
+written with python 3.6.5 and will be assumed that the user is using a similarly 
+compatible python version.
+
+\problem{2}
+\ppart{1}
+Consider a security game with four targets. The payoffs are given in the following 
+table. In each cell, the first number is the defender's payoff and the second is
+the attacker's.
+\begin{figure*}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+    & t1 & t2 & t3 & t4\\
+    \hline
+    covered & (1,0) & (3,0) & (8,0) & (8,-1)\\
+    \hline
+    uncovered & (-1,1) & (0,2) & (0,4) & (-4,4)\\
+    \hline
+\end{tabular}
+\end{figure*}
+
+For a single resource we can see that there are two options that maximize 
+the defender's utility: ${t3,t4}$. 
+
+If we have one resource then the first step is to solve the following
+\[
+    4(1-x) = 4(1-y) - y = 2
+\]
+We can trivially see that the solution is
+\[
+    x = \frac12
+\]\[
+    y = \frac23
+\]
+At this point our total resources used is $\frac76$ leaving us with $\frac56$ 
+resources.
+
+We then solve the following three equations, but we cannot have a distribution 
+where the sum is greater than $\frac56$
+\[
+    4(1-x) = 4(1-y) - y = 2(1-z) = 1
+\]
+Solving we get
+\[
+    x = \frac34
+\]\[
+    y = 1
+\]\[
+    z = \frac12
+\]
+Unfortunately this does not work! So we need to do the following
+\begin{figure*}[h]
+\centering
+\begin{tabular}{p{0.5\textwidth}p{0.5\textwidth}}
+    {\begin{align*}
+    4(1-x) &= 4(1-y) - y\\
+    4 - 4x &= 4 - 3y\\
+        4x &= 3y \\
+        y &= \frac43x
+    \end{align*}}
+    & 
+    {\begin{align*}
+        4(1-x) &= 2(1-z)\\
+        4 - 4x &= 2 - 2z\\
+        -4x +2  &= -2z\\
+        z &= 2x - 1
+    \end{align*}}
+\end{tabular}
+\end{figure*}
 
 
 \end{document}
