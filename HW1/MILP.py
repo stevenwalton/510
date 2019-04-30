@@ -26,6 +26,9 @@ def solve(targets,
     ptype              : type of problem: {MILP,LP,ILP,etc}
     minimax            : sets problem to maximization or minimization
     """
+    # Need a big number. Will lower bound later
+    M = 9999
+
     p = cplex.Cplex()
     if ptype in ("milp", "MILP"):
         p.set_problem_type(cplex.Cplex.problem_type.MILP)
@@ -41,14 +44,24 @@ def solve(targets,
         print("Only solves maximization or minimization problems")
 
     num_targets = len(targets)
-    v = ["z"+str(t) for t in range(num_targets)] + ["x"+str(t) for t in range(num_targets)]
-    #obj = d_covered
-    obj = d
-    lb = np.zeros(len(obj))
-    ub = np.ones(len(obj))
+    # v is the z's, x's, v_def, and v_att
+    v = ["z"+str(t) for t in range(num_targets)] \
+        + ["x"+str(t) for t in range(num_targets)] \
+        + ["v_def","v_att"]                             
+    num_variables = len(v)
+    obj = np.zeros(num_variables)
+    for i in range(num_variables):
+        if v[i] == "v_def":
+            obj[i] = 1.
+    lb = np.zeros(num_variables)
+    ub = np.ones(num_variables)
+    for i in range(num_variables):
+        if v[i] in ("v_def","v_att"):
+            ub[i] = cplex.infinity
+            lb[i] = -1*cplex.infinity
     # First two constraints will always be for the sums
-    ub[0] = attacker_resources
-    ub[1] = defender_resources
+    #ub[0] = attacker_resources
+    #ub[1] = defender_resources
 
     p.variables.add(obj   = obj, # Objective function
                     lb    = lb,  # Lower bound
@@ -58,38 +71,100 @@ def solve(targets,
     [p.variables.set_types([("z"+str(t),p.variables.type.integer)]) for t in range(num_targets)]
     # x_i \in [0,1] Set all x_i to continuous values
     [p.variables.set_types([("x"+str(t),p.variables.type.continuous)]) for t in range(num_targets)]
+    # Also set for attacker and defender
+    p.variables.set_types([("v_def",p.variables.type.continuous)])
+    p.variables.set_types([("v_att",p.variables.type.continuous)])
 
-    constraints_names = []
-    # sum z_i = 1
-    con0 = ["z"+str(t) for t in range(num_targets)],[1.]*num_targets
-    # sum x_i <= num_resources
-    con1 = ["x"+str(t) for t in range(num_resources)],[1.]*num_targets
+    # RHS v_def is num_targets, v_att is 2x num_targets
+    # Utility of defender when uncovered
+    util_du = M+d_uncovered
+    # Utility of attacker uncovered: Already done
+    # Utility of attacker when covered
+    util_ac = M+a_uncovered
+    #print(util_du)
+    #print(a_uncovered)
+    #print(util_ac)
+    #test = [1.] + [defender_resources]
+    init_params = np.array([1.,defender_resources])
+    #print(test)
+    #print(np.hstack((test,util_du)))
+    #print(util_du + a_uncovered + util_ac)
+    #rhs = [1.,defender_resources] + util_du + a_uncovered + util_ac
+    rhs = np.hstack((init_params,util_du,a_uncovered,util_ac))
+    #print(rhs)
+    senses = ["E","L"] \
+           + ["L" for i in range(len(util_du))] \
+           + ["G" for i in range(len(a_covered))]\
+           + ["L" for i in range(len(util_ac))]
+    
+    #zs = np.vstack((["z"+str(t+1) for t in range(num_targets)],np.ones(num_targets)))
+    #xs = np.vstack((["x"+str(t+1) for t in range(num_targets)],np.ones(num_targets)))
 
-    # Constraints 3+
-    for t in range(len(targets)):
-        s = "con"+str(t+2)
-        constraints_names.append(s)
-        d - ()
-        constraint = [[],[]]
-        rhs = []
-        constraint_senses = []
+    #z_x = np.vstack((zs,xs))
+        
 
-    constraint_senses = [""] * len(constraints_names)
-    rhs = [0]*len(constraints_names)
-    rhs[0] = attacker_resources # Attacker only has one resource
-    rhs[1] = defender_resources # 2
-    constraint_senses[0] = "E"
-    constraint_senses[1] = "L"
+    constraints = []
+    for i in range(num_targets):
+        constraints.append(["z"+str(i+1),1.])
+    for i in range(num_targets):
+        constraints.append(["x"+str(i+1),1.])
+    #constraints.append(z_x)
 
-    #constraints_names = ["con1"]
-    #con1 = [[],[]]
+    # Defender's utility
+    #def_util_vars = [["v_def","x"+str(t+1),"z"+str(t+1)] for t in range(num_targets)]
+    #def_util_coef = [[1.,(d_uncovered[t] - d_covered[t])] for t in range(num_targets)] 
+    # Interleave vars and coefficients
+    #def_util = np.vstack((def_util_vars,def_util_coef)).reshape((-1,),order='F')
+    def_util_vars = []#np.zeros(num_targets*3)
+    def_util_coef = []#np.zeros(num_targets*3)
+    def_util = []
+    for i in range(num_targets):
+        def_util_vars = (["v_def", "x"+str(i), "z"+str(i)])
+        def_util_coef = ([1., (d_uncovered[i] - d_covered[i]), M])
+        #def_util.append([def_util_vars, def_util_coef])
+        constraints.append([def_util_vars, def_util_coef])
 
-    #constraints = [con1]
-    #rho = []
-    #constraint_senses = []
+
+
+    # Attacker strats
+    #att_strat_vars = [["v_att", ("x"+str(t+i))] for t in range(num_targets)]
+    #att_strat_coef = [[1.,(a_uncovered[t]-a_covered[t])] for t in range(num_targets)]
+    #print(att_strat_vars)
+    #print(att_strat_coef)
+    #att_strat = np.vstack((att_strat_vars,att_strat_coef)).reshape((-1,),order='F')
+    att_strat_vars = []#np.zeros(num_targets*3)
+    att_strat_coef = []#np.zeros(num_targets*3)
+    att_strat = []
+    for i in range(num_targets):
+        att_strat_vars = (["v_att", "x"+str(i+1)])
+        att_strat_coef = ([1., a_uncovered[i] - a_covered[i]])
+        #att_strat.append([att_strat_vars,att_strat_coef])
+        constraints.append([att_strat_vars,att_strat_coef])
+
+
+    # Attacker utility
+    #att_util_vars = [["v_att","x"+str(t+1),"z"+str(t+1)] for t in range(num_targets)]
+    #att_util_coef = [[1.,(a_uncovered[t] - a_covered[t]),M] for t in range(num_targets)]
+    #att_util = np.vstack((att_util_vars, att_util_coef)).reshape((-1,),order='F')
+    att_util_vars = []
+    att_util_coef = []
+    att_util = []
+    for i in range(num_targets):
+        att_util_vars = (["v_att", "x"+str(i+1), "z"+str(i+1)])
+        att_util_coef = ([1., a_uncovered[i] - a_covered[i], M])
+        #att_util.append([att_util_vars, att_util_coef])
+        constraints.append([att_util_vars, att_util_coef])
+
+
+    # Throw them all together
+    #constraints = np.vstack((z_x, def_util, att_strat, att_util))
+    #print(constraints)
+    constraint_names = ["r"+str(i) for i in range(len(constraints))]
+    print(constraint_names)
+    #print(constraint_names)
 
     p.linear_constraints.add(lin_expr = constraints,
-                             senses   = constraints_names,
+                             senses   = senses,
                              rhs      = rhs,
                              names    = constraint_names)
 
@@ -147,12 +222,16 @@ def main(argv):
     params, payoff, output = command_line_args(argv)
     num_targets   = params[0]
     num_resources = params[1]
+    targets       = payoff[:][0]
     def_cov       = payoff[:][1]
     def_uncov     = payoff[:][2]
     att_uncov     = payoff[:][3]
     att_cov       = payoff[:][4]
     del params
     del payoff
+    sol = solve(targets, def_cov, def_uncov, att_cov, att_uncov, num_resources)
+    print(sol)
+
 
 if __name__ == '__main__':
     if len(sys.argv) <= 4:
