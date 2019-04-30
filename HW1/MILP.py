@@ -4,6 +4,7 @@ import sys
 import getopt
 
 def solve(targets,                  
+          payoff,
           d_covered,                
           d_uncovered,              
           a_covered,                
@@ -27,7 +28,8 @@ def solve(targets,
     minimax            : sets problem to maximization or minimization
     """
     # Need a big number. Will lower bound later
-    M = 9999
+    #M = 9999
+    M=1000
 
     p = cplex.Cplex()
     if ptype in ("milp", "MILP"):
@@ -77,10 +79,18 @@ def solve(targets,
 
     # RHS v_def is num_targets, v_att is 2x num_targets
     # Utility of defender when uncovered
-    util_du = M+d_uncovered
+    #util_du = M+d_uncovered
+    #util_du = M+d_covered
+    util_du = []
+    util_dc = []
+    util_ac = []
+    for i in range(num_targets):
+        util_du.append(M+payoff[i][2])
+        util_dc.append(payoff[i][3])
+        util_ac.append(M+payoff[i][3])
     # Utility of attacker uncovered: Already done
     # Utility of attacker when covered
-    util_ac = M+a_uncovered
+    #util_ac = M+d_covered
     #print(util_du)
     #print(a_uncovered)
     #print(util_ac)
@@ -90,12 +100,28 @@ def solve(targets,
     #print(np.hstack((test,util_du)))
     #print(util_du + a_uncovered + util_ac)
     #rhs = [1.,defender_resources] + util_du + a_uncovered + util_ac
-    rhs = np.hstack((init_params,util_du,a_uncovered,util_ac))
+    #rhs = np.hstack((init_params,util_du,d_uncovered,util_ac))
+    rhs = np.hstack((init_params, util_du, util_dc, util_ac))
+    #rhs = []
+    #rhs.append(init_params)
+    #rhs.append(util_du)
+    #rhs.append(util_dc)
+    #rhs.append(util_ac)
+    #print("d_covered",d_covered)
+    #print("d_uncovered", d_uncovered)
+    #print("a_covered", a_covered)
+    #print("a_uncovered", a_uncovered)
+
+    #print(init_params) #good
+    #print(util_du) # good
+    #print(util_dc) # good
+    #print(util_ac) # good
     #print(rhs)
+    #print("=========")
     senses = ["E","L"] \
-           + ["L" for i in range(len(util_du))] \
-           + ["G" for i in range(len(a_covered))]\
-           + ["L" for i in range(len(util_ac))]
+           + ["L" for i in range(num_targets)] \
+           + ["G" for i in range(num_targets)]\
+           + ["L" for i in range(num_targets)]
     
     #zs = np.vstack((["z"+str(t+1) for t in range(num_targets)],np.ones(num_targets)))
     #xs = np.vstack((["x"+str(t+1) for t in range(num_targets)],np.ones(num_targets)))
@@ -104,11 +130,17 @@ def solve(targets,
         
 
     constraints = []
-    for i in range(num_targets):
-        constraints.append(["z"+str(i+1),1.])
-    for i in range(num_targets):
-        constraints.append(["x"+str(i+1),1.])
-    #constraints.append(z_x)
+    zl = []
+    zc = []
+    xl = []
+    xc = []
+    for t in range(num_targets):
+        zl.append("z"+str(t))
+        zc.append(1.)
+        xl.append("x"+str(t))
+        xc.append(1.)
+    constraints.append([zl,zc])
+    constraints.append([xl,xc])
 
     # Defender's utility
     #def_util_vars = [["v_def","x"+str(t+1),"z"+str(t+1)] for t in range(num_targets)]
@@ -120,7 +152,8 @@ def solve(targets,
     def_util = []
     for i in range(num_targets):
         def_util_vars = (["v_def", "x"+str(i), "z"+str(i)])
-        def_util_coef = ([1., (d_uncovered[i] - d_covered[i]), M])
+        #def_util_coef = ([1., (d_uncovered[i] - d_covered[i]), M])
+        def_util_coef = ([1., (payoff[i][2] - payoff[i][1]), M])
         #def_util.append([def_util_vars, def_util_coef])
         constraints.append([def_util_vars, def_util_coef])
 
@@ -136,8 +169,9 @@ def solve(targets,
     att_strat_coef = []#np.zeros(num_targets*3)
     att_strat = []
     for i in range(num_targets):
-        att_strat_vars = (["v_att", "x"+str(i+1)])
-        att_strat_coef = ([1., a_uncovered[i] - a_covered[i]])
+        att_strat_vars = (["v_att", "x"+str(i)])
+        #att_strat_coef = ([1., a_uncovered[i] - a_covered[i]])
+        att_strat_coef = ([1., payoff[i][3] - payoff[i][4]])
         #att_strat.append([att_strat_vars,att_strat_coef])
         constraints.append([att_strat_vars,att_strat_coef])
 
@@ -150,23 +184,28 @@ def solve(targets,
     att_util_coef = []
     att_util = []
     for i in range(num_targets):
-        att_util_vars = (["v_att", "x"+str(i+1), "z"+str(i+1)])
-        att_util_coef = ([1., a_uncovered[i] - a_covered[i], M])
+        att_util_vars = (["v_att", "x"+str(i), "z"+str(i)])
+        #att_util_coef = ([1., a_uncovered[i] - a_covered[i], M])
+        att_util_coef = ([1., payoff[i][3] - payoff[i][4], M])
         #att_util.append([att_util_vars, att_util_coef])
         constraints.append([att_util_vars, att_util_coef])
 
-
     # Throw them all together
     #constraints = np.vstack((z_x, def_util, att_strat, att_util))
-    #print(constraints)
     constraint_names = ["r"+str(i) for i in range(len(constraints))]
-    print(constraint_names)
-    #print(constraint_names)
+    #print("constraint names\n",constraint_names)
+    #print("constraints\n",constraints)
+    #print("senses\n",senses)
+    #print("rhs\n",rhs)
 
     p.linear_constraints.add(lin_expr = constraints,
                              senses   = senses,
                              rhs      = rhs,
                              names    = constraint_names)
+    #p.linear_constraints.add(lin_expr = constraints)
+    #p.linear_constraints.add(senses = senses)
+    #p.linear_constraints.add(rhs = rhs)
+    #p.linear_constraints.add(names=constraint_names)
 
     p.solve()
     return p.solution.get_values()
@@ -222,14 +261,14 @@ def main(argv):
     params, payoff, output = command_line_args(argv)
     num_targets   = params[0]
     num_resources = params[1]
-    targets       = payoff[:][0]
-    def_cov       = payoff[:][1]
-    def_uncov     = payoff[:][2]
-    att_uncov     = payoff[:][3]
-    att_cov       = payoff[:][4]
-    del params
-    del payoff
-    sol = solve(targets, def_cov, def_uncov, att_cov, att_uncov, num_resources)
+    targets       = payoff[0][:]
+    def_cov       = payoff[1][1:]
+    def_uncov     = payoff[2][1:]
+    att_uncov     = payoff[3][1:]
+    att_cov       = payoff[4][1:]
+    #del params
+    #del payoff
+    sol = solve(targets, payoff, def_cov, def_uncov, att_cov, att_uncov, num_resources)
     print(sol)
 
 
