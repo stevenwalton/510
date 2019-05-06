@@ -28,8 +28,7 @@ def solve(targets,
     minimax            : sets problem to maximization or minimization
     """
     # Need a big number. Will lower bound later
-    #M = 9999
-    M=1000
+    M = 9999
 
     p = cplex.Cplex()
     if ptype in ("milp", "MILP"):
@@ -61,9 +60,6 @@ def solve(targets,
         if v[i] in ("v_def","v_att"):
             ub[i] = cplex.infinity
             lb[i] = -1*cplex.infinity
-    # First two constraints will always be for the sums
-    #ub[0] = attacker_resources
-    #ub[1] = defender_resources
 
     p.variables.add(obj   = obj, # Objective function
                     lb    = lb,  # Lower bound
@@ -77,57 +73,17 @@ def solve(targets,
     p.variables.set_types([("v_def",p.variables.type.continuous)])
     p.variables.set_types([("v_att",p.variables.type.continuous)])
 
-    # RHS v_def is num_targets, v_att is 2x num_targets
-    # Utility of defender when uncovered
-    #util_du = M+d_uncovered
-    #util_du = M+d_covered
-    util_du = []
-    util_dc = []
-    util_ac = []
-    for i in range(num_targets):
-        util_du.append(M+payoff[i][2])
-        util_dc.append(payoff[i][3])
-        util_ac.append(M+payoff[i][3])
-    # Utility of attacker uncovered: Already done
-    # Utility of attacker when covered
-    #util_ac = M+d_covered
-    #print(util_du)
-    #print(a_uncovered)
-    #print(util_ac)
-    #test = [1.] + [defender_resources]
+    util_du = [M+payoff[i][2] for i in range(num_targets)]
+    util_dc = [payoff[i][3] for i in range(num_targets)]
+    util_ac = [M+payoff[i][3] for i in range(num_targets)]
     init_params = np.array([1.,defender_resources])
-    #print(test)
-    #print(np.hstack((test,util_du)))
-    #print(util_du + a_uncovered + util_ac)
-    #rhs = [1.,defender_resources] + util_du + a_uncovered + util_ac
-    #rhs = np.hstack((init_params,util_du,d_uncovered,util_ac))
     rhs = np.hstack((init_params, util_du, util_dc, util_ac))
-    #rhs = []
-    #rhs.append(init_params)
-    #rhs.append(util_du)
-    #rhs.append(util_dc)
-    #rhs.append(util_ac)
-    #print("d_covered",d_covered)
-    #print("d_uncovered", d_uncovered)
-    #print("a_covered", a_covered)
-    #print("a_uncovered", a_uncovered)
 
-    #print(init_params) #good
-    #print(util_du) # good
-    #print(util_dc) # good
-    #print(util_ac) # good
-    #print(rhs)
-    #print("=========")
     senses = ["E","L"] \
            + ["L" for i in range(num_targets)] \
            + ["G" for i in range(num_targets)]\
            + ["L" for i in range(num_targets)]
     
-    #zs = np.vstack((["z"+str(t+1) for t in range(num_targets)],np.ones(num_targets)))
-    #xs = np.vstack((["x"+str(t+1) for t in range(num_targets)],np.ones(num_targets)))
-
-    #z_x = np.vstack((zs,xs))
-        
 
     constraints = []
     zl = []
@@ -143,10 +99,8 @@ def solve(targets,
     constraints.append([xl,xc])
 
     # Defender's utility
-    #def_util_vars = [["v_def","x"+str(t+1),"z"+str(t+1)] for t in range(num_targets)]
-    #def_util_coef = [[1.,(d_uncovered[t] - d_covered[t])] for t in range(num_targets)] 
     # Interleave vars and coefficients
-    #def_util = np.vstack((def_util_vars,def_util_coef)).reshape((-1,),order='F')
+    # Easier doing it this way that inline loops
     def_util_vars = []#np.zeros(num_targets*3)
     def_util_coef = []#np.zeros(num_targets*3)
     def_util = []
@@ -160,11 +114,6 @@ def solve(targets,
 
 
     # Attacker strats
-    #att_strat_vars = [["v_att", ("x"+str(t+i))] for t in range(num_targets)]
-    #att_strat_coef = [[1.,(a_uncovered[t]-a_covered[t])] for t in range(num_targets)]
-    #print(att_strat_vars)
-    #print(att_strat_coef)
-    #att_strat = np.vstack((att_strat_vars,att_strat_coef)).reshape((-1,),order='F')
     att_strat_vars = []#np.zeros(num_targets*3)
     att_strat_coef = []#np.zeros(num_targets*3)
     att_strat = []
@@ -177,36 +126,21 @@ def solve(targets,
 
 
     # Attacker utility
-    #att_util_vars = [["v_att","x"+str(t+1),"z"+str(t+1)] for t in range(num_targets)]
-    #att_util_coef = [[1.,(a_uncovered[t] - a_covered[t]),M] for t in range(num_targets)]
-    #att_util = np.vstack((att_util_vars, att_util_coef)).reshape((-1,),order='F')
     att_util_vars = []
     att_util_coef = []
     att_util = []
     for i in range(num_targets):
         att_util_vars = (["v_att", "x"+str(i), "z"+str(i)])
-        #att_util_coef = ([1., a_uncovered[i] - a_covered[i], M])
         att_util_coef = ([1., payoff[i][3] - payoff[i][4], M])
-        #att_util.append([att_util_vars, att_util_coef])
         constraints.append([att_util_vars, att_util_coef])
 
     # Throw them all together
-    #constraints = np.vstack((z_x, def_util, att_strat, att_util))
     constraint_names = ["r"+str(i) for i in range(len(constraints))]
-    #print("constraint names\n",constraint_names)
-    #print("constraints\n",constraints)
-    #print("senses\n",senses)
-    #print("rhs\n",rhs)
 
     p.linear_constraints.add(lin_expr = constraints,
                              senses   = senses,
                              rhs      = rhs,
                              names    = constraint_names)
-    #p.linear_constraints.add(lin_expr = constraints)
-    #p.linear_constraints.add(senses = senses)
-    #p.linear_constraints.add(rhs = rhs)
-    #p.linear_constraints.add(names=constraint_names)
-
     p.solve()
     return p.solution.get_values()
 
@@ -214,10 +148,14 @@ def print_solution():
     r""" Function to print solution to std out """
     pass
 
-def write_solution(solution, output_file):
+def write_solution(n,solution, output_file="out.csv", delimiter=','):
     r""" Function to write solution to file """
-    pass
-
+    to_print = solution[int(n):-2]
+    with open(output_file,'w') as _file:
+        for i in range(len(to_print)):
+            s = str(i+1) + delimiter + str(to_print[i]) + str("\n")
+            _file.write(s)
+    _file.close()
 
 def readfile(filename:str, d:str=','):
     r""" numpy read file wrapper """
@@ -228,8 +166,8 @@ def print_usage():
     print("usage: MILP.py -p <parameter file> -i <payoff file> -o <output file>")
     print("-p, --params\t sets the parameter file")
     print("-i, --payoff\t sets the payoff file")
-    print("-o, --output\t sets the output file")
-    print("-d, --delimiter\t sets the delimiter of ALL files")
+    print("-o, --output\t sets the output file. Defaults to out.csv")
+    print("-d, --delimiter\t sets the delimiter of ALL files. Defaults to csv")
 
 def command_line_args(argv):
     r""" Handles the command line arguments """
@@ -239,6 +177,7 @@ def command_line_args(argv):
         print_usage()
         exit(1)
     d = ','
+    output = "out.csv"
     if "-d" or "--delimiter" in opt:
         for opt, arg in opts:
             if opt == '-d' or opt == '--delimiter':
@@ -253,12 +192,12 @@ def command_line_args(argv):
             payoff = readfile(str(arg),d)
         elif opt in ("-o", "--output"):
             output = str(arg)
-    return parameters,payoff,output
+    return parameters,payoff,output,d
 
 
 
 def main(argv):
-    params, payoff, output = command_line_args(argv)
+    params, payoff, output, d = command_line_args(argv)
     num_targets   = params[0]
     num_resources = params[1]
     targets       = payoff[0][:]
@@ -266,10 +205,9 @@ def main(argv):
     def_uncov     = payoff[2][1:]
     att_uncov     = payoff[3][1:]
     att_cov       = payoff[4][1:]
-    #del params
-    #del payoff
     sol = solve(targets, payoff, def_cov, def_uncov, att_cov, att_uncov, num_resources)
     print(sol)
+    write_solution(num_targets,sol, output,d)
 
 
 if __name__ == '__main__':

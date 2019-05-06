@@ -14,6 +14,7 @@
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{multicol}
+\usepackage{listings}
 
 %\tikzset{
 %    treenode/.style = {shape=rectangle, rounded corners, draw, align=center}
@@ -61,7 +62,31 @@ different games.
 \documentation{}
 Note: This code uses Cplex, which does not work on python 3.7. This code was
 written with python 3.6.5 and will be assumed that the user is using a similarly 
-compatible python version.
+compatible python version. 3.5 and 3.6 should be compatible with this code
+though it is not tested.
+
+To see options in the program run
+\begin{figure}[h]
+    \centering
+\begin{lstlisting}
+python MILP.py --help
+usage: MILP.py -p <parameter file> -i <payoff file> -o <output file>
+-p, --params     sets the parameter file
+-i, --payoff     sets the payoff file
+-o, --output     sets the output file. Defaults to out.csv
+-d, --delimiter  sets the delimiter of ALL files. Defaults to csv
+\end{lstlisting}
+\end{figure}
+The delimiter option is the only option that is optional. Params and payoff
+are required. 
+
+The code can be run with the following command:
+\begin{figure}[h]
+    \centering
+    \begin{lstlisting}
+python MILP.py -p param.csv -i payoff.csv
+    \end{lstlisting}
+\end{figure}
 
 \problem{2}
 \ppart{1}
@@ -275,7 +300,8 @@ We'll create a small table of expected utilities
 \end{tabular}
 \end{figure*}
 \FloatBarrier
-$\therefore$ Roger should get a clown and Caleb should not go. Roger's strategy
+$\therefore$ Roger should get a clown and Caleb should not go. Nash equilibrium 
+is (3,1). Roger's strategy
 dominates because he still gets a clown regardless of Caleb's choice. But Caleb
 does not have a dominating strategy because he would switch based on Roger's 
 choice.
@@ -305,9 +331,24 @@ Now let's let $x=2$ and find the Nash Equilibrium
 \end{tabular}
 \end{figure*}
 \FloatBarrier
-$\therefore$ the result is the same. There is no longer a dominant strategy for
-either because they will both switch if they knew what the other was playing.
-If $Caleb(go)$ then $Roger(clown)$ but if $Caleb(\neg go)$ then $Roger(\neg clown)$
+There is no pure Nash Equilibrium in this case, so we need to solve.
+\begin{align*}
+    <C_{\neg g}> &= p(0) + (1-p)4\\
+        &= 4 - 4p\\
+    <C_{g}> &= p(1) + (1-p)3\\
+        &= 3 - 2p\\
+    4-4p &= 3-2p\\
+    p &= \frac12\\
+    <R_c> &= q(6) + (1-q)(1)\\
+        &= 1 + 5q\\
+    <R_{\neg c}> &= q(4) + (1-q)(2)\\
+        &= 2 + 2q\\
+    1 + 5q &= 2 + 2q\\
+    q &= \frac13
+\end{align*}
+This gives us the results $R(\frac12 c, \frac12 \neg c), C(\frac13 g, \frac23 \neg g)$
+
+There are no dominating strategies but Roger has a higher expected payout.
 \\
 \\
 (iii)\\
@@ -334,8 +375,22 @@ Now let's let $x=3$ and find the Nash Equilibrium
 \end{tabular}
 \end{figure*}
 \FloatBarrier
-$\therefore$ Roger shouldn't get a clown and Caleb should go. There are no 
-dominating strategies for the same reason.
+There again is no pure Nash Equilibrium so we need to find a mixed strategy.
+``Cheating" a little we can see that Caleb's payoffs don't change so we can 
+know that Roger will have the same mixed strategy. So we'll just calculate
+utility of Roger.
+\begin{align*}
+    <R_c> &= q(5) + (1-q)(0)\\
+        &= 5q\\
+    <R_{\neg c}> &= q(4) + (1-q)(2)\\
+        &= 2 + 2q\\
+    5q &= 2 + 2q\\
+    q &= \frac23
+\end{align*}
+So we get the Mixed Nash Equilibrium of $R(\frac12 c, \frac12 \neg c), C(\frac23
+g, \frac13 \neg g)$
+
+There are no dominating strategies but Roger has a higher expected payout.
 \\
 \\
 (iv)\\
@@ -362,7 +417,8 @@ Now let's let $x=5$ and find the Nash Equilibrium
 \end{tabular}
 \end{figure*}
 \FloatBarrier
-$\therefore$ Roger really shouldn't get a clown and Caleb should go. Roger 
+$\therefore$ Roger really shouldn't get a clown and Caleb should go. Nash
+Equilibrium is (4,4). Roger 
 dominates this time with $Roger(\neg clown)$ because he chooses that regardless
 of Caleb's decision. Caleb's best strategy is still dependent on Roger's. 
 \end{document}
