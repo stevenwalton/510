@@ -1,0 +1,84 @@
+\documentclass[12pt,letter]{article}
+\usepackage{geometry}\geometry{top=0.75in}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{xcolor}	% Color words
+%\usepackage{cancel}	% Crossing parts of equations out
+\usepackage{tikz}    	% Drawing 
+\usepackage{pgfplots}   % Other plotting
+\usepgfplotslibrary{colormaps,fillbetween}
+\usepackage{placeins}   % Float barrier
+\usepackage{hyperref}   % Links
+\usepackage{tikz-qtree} % Trees
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{multicol}
+\usepackage{listings}
+
+%\tikzset{
+%    treenode/.style = {shape=rectangle, rounded corners, draw, align=center}
+%    root/.style     = {treenode, font=\Large}
+%    env/.style      = {treenode, font=\ttyfamily\normalsize},
+%    dummy/.style    = {circle,draw}
+%}
+
+%\tikzset{every tree node/.style={circle,align=center, anchor=west, grow=right}
+%	}
+\tikzset{every tree node/.style={align=center,minimum width=2em},%, draw},%, circle},
+	 grow=right,
+	 level distance=1.75cm}
+
+% Don't indent
+\setlength{\parindent}{0pt}
+% Function to replace \section with a problem name specifically formatted
+\newcommand{\problem}[1]{\vspace{3mm}\Large\textbf{{Problem {#1}\vspace{3mm}}}\normalsize\\}
+% Formatting function, like \problem
+\newcommand{\ppart}[1]{\vspace{2mm}\large\textbf{\\Part {#1})\vspace{2mm}}\normalsize\\}
+\newcommand{\documentation}[1]{\vspace{2mm}\large\textbf{\\Documentation{#1}\vspace{2mm}}\normalsize\\}
+% Formatting 
+\newcommand{\condition}[1]{\vspace{1mm}\textbf{{#1}:}\normalsize\\}
+
+\begin{document}
+\title{CIS 510 Assignment 2}
+\author{Steven Walton}
+\maketitle
+\problem{1}
+\problem{2}
+Consider the ``cross-out" game. In this game one writes down "1,2,3". Player
+1 can cross out a single number or any 2 adjacent number (12,23). Player
+2 then gets to make the same type of action. The winner is the one who crosses
+out the last number.
+
+\ppart{1.1}
+\ppart{1.2}
+This is a solved game. If it is an odd sized game then player 1 can always win,
+otherwise player 2 can always win. This is because if the size is odd then 
+player 1 can place a binary partition and split the game into any two sub games.
+Player 2 will then be the first player on one sub game and player 1 will be the
+second player in the second sub game. If the second player wins any even game,
+then we can see that player 1 will always win this sub game (because it is even
+and they are the second player for an even sized game). 
+
+\ppart{2.1}
+Realization Plan Player 1
+\begin{align*}
+    r_1(\oslash) &= r_1(L) + r_1(R) \\
+    r_1(L) &= r_1(Ll) + r_1(Lr)\\
+    r_1(R) &= r_1(Rl) + r_1(Rl)\\
+    r_1(Ll) &= r_1(LlU) + r_1(LlD)\\
+    r_1(Lr) &= r_1(LrU) + r_1(LrD)\\
+    r_1(Rl) &= r_1(RlU) + r_1(RlD)\\
+    r_1(Rr) &= r_1(RrU) + r_1(RrD)\\
+    r_1(\oslash),r_1(L),r_1(R),&r_1(Ll),r_1(Lr),r_1(Rl),r_1(Rr) \geq 0
+\end{align*}
+
+Realization Plan Player 2
+\begin{align*}
+    r_2(\oslash) &= r_2(A) + r_2(B)\\
+    r_2(A) &= r_2(AC) + r_2(AD)\\
+    r_2(B) &= r_2(BC) + r_2(BD)\\
+\end{align*}
+
+
+\end{document}

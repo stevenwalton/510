@@ -14,3 +14,4 @@ Makefile
 *.mp4
 *.log
 *.aux
+*.out
