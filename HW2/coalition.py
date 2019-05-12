@@ -27,12 +27,13 @@ MAX_CACHE = None
 #################################
 
 class Coalition:
-    best_strcuture = {}
-    key_value = {}
-    best_val = 0
     def __init__(self,coalition,numplayers):
         self.input_coalitions = coalition
         self.numplayers = numplayers
+        self.best_structure = {}
+        self.key_value = {}
+        self.best_val = 0
+        self.best_coalition = ""
 
     def permutes(self,key):
         if key == "12":
@@ -85,7 +86,15 @@ class Coalition:
 
     def optimal_val(self,key):
         if key not in self.key_value:
-            self.key_value[key] = max(self.input_coalitions[key],max([self.get_value(k) for k in self.permutes(key)]))
+            #self.key_value[key] = max(self.input_coalitions[key],max([self.get_value(k) for k in self.permutes(key)]))
+            self.best_structure[key] = key
+            self.key_value[key] = self.input_coalitions[key]
+            permutes = self.permutes(key)
+            for k in permutes:
+                if self.get_value(k) > self.key_value[key]:
+                    self.key_value[key] = self.get_value(k)
+                    self.best_structure[key] = k
+
             if self.key_value[key] > self.best_val:
                 self.best_val = self.key_value[key]
 
@@ -93,10 +102,23 @@ class Coalition:
         for key in self.input_coalitions:
             if len(key) == 1:
                 self.key_value[key] = self.input_coalitions[key]
+                self.best_structure[key] = key
             else:
                 self.optimal_val(key)
-        print(self.best_val)
+        #print(self.best_val)
+        self.best_coalition = self.get_best_coalition(key)
+        #print(self.best_coalition)
 
+    def get_best_coalition(self,key):
+        keys = self.best_structure[key].split(',')
+        return ','.join((self.best_structure[k] for k in keys))
+
+    def print_to_file(self,output):
+        s = '{{' + self.best_coalition.replace(',','},{') + "}}"
+        s += "," + str(self.best_val) + "\n"
+        with open(output,'w') as _file:
+            _file.write(s)
+        _file.close()
 
 def readfile(filename:str, d:str=None,dtype_=str):
     r""" numpy read file wrapper """
@@ -144,35 +166,14 @@ def format_input(input_file):
     for i in range(1,len(input_file)):
         data = re.sub("{|}","",input_file[i]).rsplit(',',1)
         coalitions[re.sub(",","",data[0])] = np.float(data[1])
-    #coalitions = np.zeros((len(input_file)-1,numplayers))
-    #rewards    = np.zeros(len(input_file)-1)
-    #for i in range(1,len(input_file)):
-    #    data = np.asarray(re.sub("{|}", "", \
-    #            input_file[i]).split(','),\
-    #            dtype=np.float)
-    #    coalitions[i-1] = np.hstack((data[:-1],\
-    #            np.repeat(0,\
-    #            np.shape(coalitions[i-1])[0] - np.shape(data[:-1])[0])))
-    #    rewards[i-1] = np.asarray(data[-1],dtype=np.float)
-    #return coalitions,rewards
     return numplayers,coalitions
-
-#@lru_cache(maxsize=MAX_CACHE)
-def opt_coalition(coalition,coalition_dict):
-    r""" """
-    return max(coalition,coalition_dict[coalition])
-
-def opt_find():
-    pass
-    
-
-    
 
 def main(argv):
     in_file,out_file = command_line_args(argv)
     n,c = format_input(in_file)
     C = Coalition(c,n)
     C.get_optimal()
+    C.print_to_file(out_file)
 
 if __name__ == '__main__':
     if len(sys.argv) <= 2:
