@@ -27,13 +27,75 @@ MAX_CACHE = None
 #################################
 
 class Coalition:
-    strcuture = {}
+    best_strcuture = {}
+    key_value = {}
+    best_val = 0
     def __init__(self,coalition,numplayers):
-        self.input_coalition = coalition
+        self.input_coalitions = coalition
         self.numplayers = numplayers
 
     def permutes(self,key):
-        return [''.join(i) for i in permutations(key)]
+        if key == "12":
+            return ["1,2"]
+        elif key == '13':
+            return ['1,3']
+        elif key == '14':
+            return ['1,4']
+        elif key == '23':
+            return ['2,3']
+        elif key == '24':
+            return ['2,4']
+        elif key == '34':
+            return ['3,4']
+        elif key == "123":
+            return ['1,23','2,13','3,12']
+        elif key == '124':
+            return ['1,24','2,14','4,12']
+        elif key == '134':
+            return ['1,34','3,14','4,13']
+        elif key == '234':
+            return ['2,34','3,24','4,23']
+        elif key == "1234":
+            return ['1,234','2,134','3,124','4,123','12,23','13,24','14,23']
+
+    def set_structure(self,key,val):
+        n_key = sort(key)
+        if n_key in best_strcuture:
+            print("This key is already here")
+            exit(1)
+        self.best_structure[n_key] = key
+        self.key_value[n_key] = val
+        if self.best_val is None:
+            self.best_val = val
+        elif val > self.best_val:
+            self.best_val = val
+
+    def get_value(self,key):
+        t = 0
+        for k in key.split(','):
+            #if k == ',': continue
+            #if self.has_key(k): 
+            if k in self.key_value:
+                tt = self.key_value[k]
+            else:
+                t_key = [key[i] for i in k.split(',')]
+                tt = max([max(t,t_key[i]) for i in range(len(tk))])
+            t += tt
+        return t
+
+    def optimal_val(self,key):
+        if key not in self.key_value:
+            self.key_value[key] = max(self.input_coalitions[key],max([self.get_value(k) for k in self.permutes(key)]))
+            if self.key_value[key] > self.best_val:
+                self.best_val = self.key_value[key]
+
+    def get_optimal(self):
+        for key in self.input_coalitions:
+            if len(key) == 1:
+                self.key_value[key] = self.input_coalitions[key]
+            else:
+                self.optimal_val(key)
+        print(self.best_val)
 
 
 def readfile(filename:str, d:str=None,dtype_=str):
@@ -100,10 +162,6 @@ def opt_coalition(coalition,coalition_dict):
     r""" """
     return max(coalition,coalition_dict[coalition])
 
-def find_opt():
-    r""" """
-    pass
-
 def opt_find():
     pass
     
@@ -114,7 +172,7 @@ def main(argv):
     in_file,out_file = command_line_args(argv)
     n,c = format_input(in_file)
     C = Coalition(c,n)
-    #find_opt(c)
+    C.get_optimal()
 
 if __name__ == '__main__':
     if len(sys.argv) <= 2:
