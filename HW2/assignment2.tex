@@ -43,24 +43,94 @@
 \title{CIS 510 Assignment 2}
 \author{Steven Walton}
 \maketitle
-\problem{1}
-\problem{2}
+\problem{P1}
+Program expects an input where the first line is the number of players
+and each subsequent line is the grand coalition of a subset of players surrounded
+by curly braces and comma separated with the value of that coalition.
+An example input file is shown here
+\begin{figure}[h]
+    \centering
+\begin{lstlisting}
+4
+{1},30
+{2},40
+{3},25
+{4},45
+{1,2},50
+{1,3},60
+{1,4},80
+{2,3},55
+{2,4},70
+{3,4},80
+{1,2,3},90
+{1,2,4},120
+{1,3,4},100
+{2,3,4},115
+{1,2,3,4},140
+\end{lstlisting}
+\end{figure}
+
+The program can be run with the following options. Not that only the input file
+is required, but it is suggested to specify the output file. 
+\begin{figure}[h!]
+    \centering
+\begin{lstlisting}
+python coalition.py --help
+usage: coalition.py -i <input file> -o <output file>
+-h, --help       prints this message
+-i, --input      sets the input file
+-o, --output     sets the output file: defaults to optimalCS.txt
+\end{lstlisting}
+\end{figure}
+\FloatBarrier
+
+\problem{Q1}
 Consider the ``cross-out" game. In this game one writes down "1,2,3". Player
 1 can cross out a single number or any 2 adjacent number (12,23). Player
 2 then gets to make the same type of action. The winner is the one who crosses
 out the last number.
 
-\ppart{1.1}
-\ppart{1.2}
-This is a solved game. If it is an odd sized game then player 1 can always win,
-otherwise player 2 can always win. This is because if the size is odd then 
-player 1 can place a binary partition and split the game into any two sub games.
-Player 2 will then be the first player on one sub game and player 1 will be the
-second player in the second sub game. If the second player wins any even game,
-then we can see that player 1 will always win this sub game (because it is even
-and they are the second player for an even sized game). 
+\ppart{Q1.1}
 
-\ppart{2.1}
+
+%\begin{figure}[h]
+%    \centering
+%    \begin{tikzpicture}[grow=down]
+%    \Tree[.P1 
+%            [.1 2 3 ] 
+%            [.2 1 3 ] 
+%            [.3 1 2 ] 
+%         ]
+%\end{tikzpicture}
+%\end{figure}
+
+\ppart{Q1.2}
+This is a solved game where player 1 can always win.
+\\
+
+To determine this let's first consider a simpler game where a player can only
+cross out a single number.
+This game is also solved, if it is an odd sized game then player 1 can 
+always win, otherwise player 2 can always win. This is because if the size 
+is odd then player 1 can place a binary partition and split the game into any 
+two sub games.  Player 2 will then be the first player on one sub game 
+and player 1 will be the second player in the second sub game. If the second 
+player wins any even game, then we can see that player 1 will always win this 
+sub game (because it is even and they are the second player for an even 
+sized game). 
+\\
+
+Now let's consider where a player can cross out any number of adjacent numbers.
+Firstly there is the trivial case where player 1 can cross out all the numbers
+(I'm assuming this wasn't meant to be possible).
+Similarly Player 1 can cross out all but two non-adjacent numbers, then this
+is an even game where a player may only cross out a single number (we have 
+reduced the game to the single cross out game discussed above). Thinking about
+this from subgames, we can see that Player 1 can always reduce any subgame into
+the single cross out game. By doing this Player 1 can always put themselves
+to be in the first or second position of the new subgames.
+
+\ppart{Q2.1}
 Realization Plan Player 1
 \begin{align*}
     r_1(\oslash) &= r_1(L) + r_1(R) \\
