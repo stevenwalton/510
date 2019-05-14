@@ -200,11 +200,16 @@ def main(argv):
     params, payoff, output, d = command_line_args(argv)
     num_targets   = params[0]
     num_resources = params[1]
-    targets       = payoff[0][:]
-    def_cov       = payoff[1][1:]
-    def_uncov     = payoff[2][1:]
-    att_uncov     = payoff[3][1:]
-    att_cov       = payoff[4][1:]
+    #targets       = payoff[0][:]
+    #def_cov       = payoff[1][1:]
+    #def_uncov     = payoff[2][1:]
+    #att_uncov     = payoff[3][1:]
+    #att_cov       = payoff[4][1:]
+    targets       = payoff[:,:]
+    def_cov       = payoff[:,1:]
+    def_uncov     = payoff[:,1:]
+    att_uncov     = payoff[:,1:]
+    att_cov       = payoff[:,1:]
     sol = solve(targets, payoff, def_cov, def_uncov, att_cov, att_uncov, num_resources)
     print(sol)
     write_solution(num_targets,sol, output,d)
