@@ -5,10 +5,6 @@ import getopt
 
 def solve(targets,                  
           payoff,
-          d_covered,                
-          d_uncovered,              
-          a_covered,                
-          a_uncovered,              
           defender_resources:int=1, 
           attacker_resources:int=1, 
           ptype:str="MILP",         
@@ -18,10 +14,6 @@ def solve(targets,
 
     [params]
     targets            : number of targets
-    d_covered          : defender's payoff if target is covered
-    d_uncovered        : defender's payoff if target is uncovered
-    a_covered          : attacker's payoff if target is covered
-    a_uncovered        : attacker's payoff if target is uncovered
     defender_resources : number of resources that defender has
     attacker_resources : number of resources that attacker has
     ptype              : type of problem: {MILP,LP,ILP,etc}
@@ -106,22 +98,18 @@ def solve(targets,
     def_util = []
     for i in range(num_targets):
         def_util_vars = (["v_def", "x"+str(i), "z"+str(i)])
-        #def_util_coef = ([1., (d_uncovered[i] - d_covered[i]), M])
         def_util_coef = ([1., (payoff[i][2] - payoff[i][1]), M])
-        #def_util.append([def_util_vars, def_util_coef])
         constraints.append([def_util_vars, def_util_coef])
 
 
 
     # Attacker strats
-    att_strat_vars = []#np.zeros(num_targets*3)
-    att_strat_coef = []#np.zeros(num_targets*3)
+    att_strat_vars = []
+    att_strat_coef = []
     att_strat = []
     for i in range(num_targets):
         att_strat_vars = (["v_att", "x"+str(i)])
-        #att_strat_coef = ([1., a_uncovered[i] - a_covered[i]])
         att_strat_coef = ([1., payoff[i][3] - payoff[i][4]])
-        #att_strat.append([att_strat_vars,att_strat_coef])
         constraints.append([att_strat_vars,att_strat_coef])
 
 
@@ -200,18 +188,8 @@ def main(argv):
     params, payoff, output, d = command_line_args(argv)
     num_targets   = params[0]
     num_resources = params[1]
-    #targets       = payoff[0][:]
-    #def_cov       = payoff[1][1:]
-    #def_uncov     = payoff[2][1:]
-    #att_uncov     = payoff[3][1:]
-    #att_cov       = payoff[4][1:]
-    targets       = payoff[:,:]
-    def_cov       = payoff[:,1:]
-    def_uncov     = payoff[:,1:]
-    att_uncov     = payoff[:,1:]
-    att_cov       = payoff[:,1:]
-    sol = solve(targets, payoff, def_cov, def_uncov, att_cov, att_uncov, num_resources)
-    print(sol)
+    targets       = payoff[:,0]
+    sol = solve(targets, payoff, num_resources)
     write_solution(num_targets,sol, output,d)
 
 
