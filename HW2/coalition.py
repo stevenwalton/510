@@ -2,6 +2,8 @@ import sys # For argv
 import getopt # For options
 import re # regex replacing
 import numpy as np
+from itertools import permutations
+from itertools import combinations
 
 class Coalition:
     def __init__(self,coalition,numplayers):
@@ -13,28 +15,56 @@ class Coalition:
         self.best_coalition = ""
 
     def permutes(self,key):
-        if key == "12":
-            return ["1,2"]
-        elif key == '13':
-            return ['1,3']
-        elif key == '14':
-            return ['1,4']
-        elif key == '23':
-            return ['2,3']
-        elif key == '24':
-            return ['2,4']
-        elif key == '34':
-            return ['3,4']
-        elif key == "123":
-            return ['1,23','2,13','3,12']
-        elif key == '124':
-            return ['1,24','2,14','4,12']
-        elif key == '134':
-            return ['1,34','3,14','4,13']
-        elif key == '234':
-            return ['2,34','3,24','4,23']
-        elif key == "1234":
-            return ['1,234','2,134','3,124','4,123','12,23','13,24','14,23']
+        unformatted_combos = []
+        for i in range(1,len(key)//2 + 1):
+            unformatted_combos += list(combinations(key,i))
+        combos = [""]*len(unformatted_combos)
+        for i in range(len(unformatted_combos)):
+            combos[i] = "".join(unformatted_combos[i][:])
+        combos = [combos[i] + "," for i in range(len(combos))]
+        for i in range(len(combos)):
+            for j in range(len(key)):
+                if key[j] not in combos[i]:
+                    combos[i] += key[j]
+        # Only do assert from here because we have some redundancies in the small
+        # keys. 
+        # Commenting out checks because you might run different code
+        #if key == "123":
+        #    assert(combos==['1,23','2,13','3,12'])
+        #elif key == '124':
+        #    assert(combos==['1,24','2,14','4,12'])
+        #elif key == '134':
+        #    assert(combos==['1,34','3,14','4,13'])
+        #elif key == '234':
+        #    assert(combos==['2,34','3,24','4,23'])
+        #elif key == "1234":
+        #    # up to -1 because our method gives a '34,12' which is redundant
+        #    assert(combos[:-1]==['1,234','2,134','3,124','4,123','12,34','13,24','14,23','23,14','24,13'])
+        return combos
+    # Originally did this to check the answer. Then checked above version with
+    # these keys. They appear to match
+        #if key == "12":
+        #    return ["1,2"]
+        #elif key == '13':
+        #    return ['1,3']
+        #elif key == '14':
+        #    return ['1,4']
+        #elif key == '23':
+        #    return ['2,3']
+        #elif key == '24':
+        #    return ['2,4']
+        #elif key == '34':
+        #    return ['3,4']
+        #elif key == "123":
+        #    return ['1,23','2,13','3,12']
+        #elif key == '124':
+        #    return ['1,24','2,14','4,12']
+        #elif key == '134':
+        #    return ['1,34','3,14','4,13']
+        #elif key == '234':
+        #    return ['2,34','3,24','4,23']
+        #elif key == "1234":
+        #    return ['1,234','2,134','3,124','4,123','12,34','13,24','14,23','23,14','24,13']
 
     def set_structure(self,key,val):
         n_key = sort(key)
