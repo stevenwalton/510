@@ -2,7 +2,6 @@ import sys # For argv
 import getopt # For options
 import re # regex replacing
 import numpy as np
-from itertools import permutations
 from itertools import combinations
 
 class Coalition:
