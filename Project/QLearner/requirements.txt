@@ -1,0 +1,3 @@
+gym==0.12.1
+-e git+https://github.com/openai/retro.git@29dc84fef6d7076fd11a3847d2877fe59e705d36#egg=gym_retro
+numpy==1.16.2
