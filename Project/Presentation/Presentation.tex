@@ -1,0 +1,200 @@
+\documentclass[pdf,8pt]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}       % Images
+\graphicspath{{Images/}}
+\usepackage{xcolor}         % Change Colors
+%\usepackage[font={scriptsize}]{caption}   % Adjust caption fonts
+\usepackage{caption}
+\captionsetup[figure]{font=small}
+\usepackage{multimedia}     % Movies!
+\usepackage{tikz}
+\usepackage{animate}
+\usepackage{media9}
+%\usepackage{epstopdf}
+%
+%\epstopdfDeclareGraphicsRule{.gif}{png}{.png}{convert gif:#1 png:\OutputFile}
+%\AppendGraphicsExtensions{.gif}
+%\hypersetup{pdfpagemode=FullScreen} % Presentation Mode
+
+% Title
+\title{QLearning For Videogames\\
+}
+\author{Steven Walton\\ \small University of Oregon}
+\date{CIS 510: Multi-Agent Systems\\3 June 2019}
+
+% Background
+\usebackgroundtemplate
+{
+    \includegraphics[width=\paperwidth,height=\paperheight]{UOTemplate.png}
+}
+\definecolor{UOYellow}{HTML}{FDCB00}
+
+% Formatting
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{normal text}{fg=white}
+\setbeamercolor{structure}{fg=white}        % Adjusts figures and frame titles
+%\renewcommand{\frametitle}[1]{\centering\Huge\textbf{{#1}}\normalsize}
+\setbeamertemplate{frametitle}[default][center]
+\setbeamerfont{frametitle}{size=\Huge}
+
+\tikzset{
+    ->, 
+    level distance = 12em,
+    minimum size=2em,
+    %edge from parent/.style={draw,thick},
+    level 1/.style={sibling distance=6em},
+    level 2/.style={sibling distance=3em},
+    thick/.style = {line width=1.5pt},
+    extra thick/.style = {line width=3.5pt},
+    red node/.style={shape=circle,draw=red,fill=red!40,thick,inner sep=1.2},
+    blue node/.style={shape=circle,draw=blue,fill=blue!40,thick,inner sep=1.2}
+}
+
+
+%\newcommand{\mytitle}[1]{\setcolor{bg=UOYellow,fg=green}\frametitle{{#1}}}
+\newcommand\Quadrents[4]{
+    \begin{minipage}[b][0.35\textheight][t]{0.49\textwidth}#1\end{minipage}\hfill
+    \begin{minipage}[b][0.35\textheight][t]{0.49\textwidth}#2\end{minipage}\\[0.5em]
+    \begin{minipage}[b][0.35\textheight][t]{0.49\textwidth}#3\end{minipage}\hfill
+    \begin{minipage}[b][0.35\textheight][t]{0.49\textwidth}#4\end{minipage}
+}
+
+\newcommand\Split[2]{
+    \begin{minipage}[b][0.35\textheight][t]{0.8\textwidth}#1\end{minipage}\\[2.0em]
+    \begin{minipage}[b][0.35\textheight][t]{0.8\textwidth}#2\end{minipage}
+}
+
+\begin{document}
+%
+%% 1
+\frame{\titlepage}
+%
+%% 2
+\begin{frame}
+\frametitle{What is Q-Learning?}
+\begin{columns}
+    % Left Side
+    \begin{column}{0.60\paperwidth}
+    \begin{itemize}
+        \item<1-> Markov Decision Processes (MDPs) can represent decision making 
+            processes with random outcomes. 
+        \item<2-> We want to find an optimal policy (set of actions)
+        \item<3-> We learn with the Bellman Equation, using an iterative process
+              $ Q(s,a) = Q(s,a) + \alpha(r + \gamma\max_{a'}Q(s',a') - Q(s,a)) $\\
+              \hspace{5pt}$\alpha = $ learning rate\\
+              \hspace{5pt}$r = $ reward\\
+              \hspace{5pt}$\gamma = $ discount
+    \end{itemize}
+    \end{column}
+
+    % Right Side
+    \begin{column}{0.39\paperwidth}
+        \begin{figure}
+        \begin{tikzpicture}[auto,node distance=8mm,>=latex,font=\small]
+            \tikzstyle{round}=[thick,draw=white,circle]
+            \tikzstyle{connection}=[draw=white,thick]
+            \node[round] (s0) {$s_0$};
+            \node[round, above=40pt, right=42pt] (s1) {$s_1$};
+            \node[round, below=40pt, right=42pt] (s2) {$s_2$};
+        
+            \draw[->] (s0) [connection,out=80,in=160] to node {$p_{0,1}$} node [swap] {} (s1);
+            \draw[->] (s1) [connection,out=250,in=10] to node {} node [swap] {$p_{1,0}$} (s0);
+            \draw[->] (s0) [connection,out=-80,in=200] to node {} node [swap] {$p_{0,2}$} (s2);
+            \draw[->] (s2) [connection,out=110,in=-10] to node {$p_{2,0}$} node [swap] {} (s0);
+        
+            \draw[->] (s0) [connection,out=140,in=210,loop] to node {} node [swap] {$p_{0,0}$} (s0);
+            \draw[->] (s1) [connection,out=-30,in=50,loop] to node {} node [swap] {$p_{1,1}$} (s1);
+            \draw[->] (s2) [connection,out=50,in=-30,loop] to node {$p_{2,2}$} node [swap] {} (s2);
+        \end{tikzpicture}
+        \caption{Sample Markov Decision Process}
+        \end{figure}
+    \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{Framework}
+\begin{columns}
+
+\begin{column}{0.49\paperwidth}
+\begin{itemize}
+\item OpenAI Gym: Allows for abstracts out environments and allows researchers
+to focus on creating algorithms.
+\item OpenAI Retro: Wrapps Gym framework to focus on retro videogames.
+\item Allows same code to be run on any game that is integrated.
+\item Creates an environment to (supposedly) allow for easy integration of new
+games
+\end{itemize}
+\end{column}
+
+\begin{column}{0.49\paperwidth}
+%\begin{figure}
+%\includegraphics[width=\textwidth]{AG.gif}
+%\includegraphics[width=\textwidth]{AG.png}
+%\end{figure}
+%\animategraphics[loop,autoplay,width=\textwidth]{10}{AG/AG-}{0}{2000}
+%\begin{figure}
+%\includemedia[width=\textwidth,height=\textheight,activate=pageopen,addresource=retro.mp4]{}{retro.mp4}
+%\end{figure}
+\begin{figure}
+%\movie[autostart,loop]{\includegraphics[width=\textwidth]{AG.png}}{Images/AG.mp4}
+\movie[autostart,loop]{\includegraphics[width=\textwidth]{retro.png}}{Images/retro.mp4}
+\end{figure}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{Integration}
+\begin{columns}
+
+\begin{column}{0.29\paperwidth}
+\begin{itemize}
+\item<1-> Need to collect RAM values (used BizHawk).
+\item<3-> Convert Hex to decimal and add rambase number and integrate into scenario and data files
+\item<4-> Define actions and rewards for the game.
+\item<5-> Not all RAM values are so easy to get nor define. (Lua scripts)
+\item<6-> Thanks SethBling
+\end{itemize}
+\end{column}
+
+\begin{column}{0.70\paperwidth}
+\begin{figure}
+\includegraphics<1-1>[width=\textwidth]{Ram.png}
+\includegraphics<2-2>[width=\textwidth]{RamArrows.png}
+\includegraphics<3->[width=\textwidth]{jsons.png}
+\end{figure}
+\end{column}
+
+\end{columns}
+\vspace{-7pt}
+\begin{tikzpicture}[overlay, remember picture]
+\pgftransformshift{\pgfpointanchor{current page}{center}}
+\node[align=center, anchor=center] {\includegraphics<7->[height=0.9\textheight]{Shrug.jpg}};
+\end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{So Let's Make Something Work}
+\begin{tikzpicture}<1>[overlay]
+\pgftransformshift{\pgfpointanchor{current page}{center}}
+\node[align=center,anchor=center]{
+\movie[autostart,loop]{\includegraphics[width=\textwidth]{deadline.png}}{Images/deadline.mp4}
+};
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+\frametitle{So Let's Make Something Work}
+Goals
+\begin{itemize}
+\item Get a program to work nicely with retro
+\item 
+\end{itemize}
+\end{frame}
+
+
+\end{document}
+
