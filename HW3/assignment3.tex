@@ -51,7 +51,7 @@
 \ppart{3}
 Consider a first price sealed-bid auction with n risk-neutral agents whose 
 valuations, $v_1,\cdots,v_n$, are independently drawn from a uniform distribution
-on the interval $[a,b]$. Prove that $\left(\frac{n-1}{n}v_1,\cdots,\frac{n-1}{n}v_n\right)$ is a Bayes-Nash equilibrium.
+on the interval $[0,b]$. Prove that $\left(\frac{n-1}{n}v_1,\cdots,\frac{n-1}{n}v_n\right)$ is a Bayes-Nash equilibrium.
 
 We will follow a similar formula to the two player game that we did in class.
 We will let $\mathcal{V}$ be the space of players.
@@ -59,23 +59,27 @@ We will let $\mathcal{V}$ be the space of players.
 \begin{minipage}{\textwidth}
 \begin{multicols}{2}
 \begin{align*}
-    &\int\limits_{\mathcal{V},a}^b u_1(s_1) dv\\
-    =&\int\limits_{\mathcal{V},a}^{s_1} u_1(s_1)dv + \int\limits_{\mathcal{V},s_1}^b u_1(s_1)dv\\
-    =&\int\limits_{\mathcal{V},a}^{s_1} u_1(s_1)dv + 0\\
-    =&\int\limits_{\mathcal{V},a}^{s_1} (v_1 - s_1)dv\\
-    =&(v_1 - s_1) \int\limits_{\mathcal{V},a}^{s_1}dv\\
+    &\int\limits_{\mathcal{V},0}^b u_1(s_1) dv\\
+    =&\int\limits_{\mathcal{V},j}^{s_1} u_1(s_1)dv + \int\limits_{\mathcal{V},s_1}^b u_1(s_1)dv\\
+    =&\int\limits_{\mathcal{V},0}^{s_1} u_1(s_1)dv + 0\\
+    =&\int\limits_{\mathcal{V},0}^{s_1} (v_1 - s_1)dv\\
+    =&(v_1 - s_1) \int\limits_{\mathcal{V},0}^{s_1}dv\\
     =&(v_1 - s_1)(s_1^{n-1} - a)\\
     =&s_1^{n-1}v_1 - s_1^{n} -av_1 + as_1\\
 \end{align*}
 
 \begin{align*}
-    &\left(\frac{d}{ds_1}\{s_1^{n-1}-s_1^{n}-av_1+as_1\}\right)\\
-    &= (n-1)v_1 - ns_1 + a\\
+    &\left(\frac{d}{ds_1}\{s_1^{n-1}-s_1^{n}\}\right)\\
+    &= (n-1)v_1 - ns_1\\
     ns_1 &= (n-1)v_1 +a \\
-    s_1 &= \frac{n-1}{n}v_1 + \frac{a}{n}
+    s_1 &= \frac{n-1}{n}v_1
 \end{align*}
-If we set the bounds to $[0,1]$ then the constant term drops out as $a\to 0$
-We can also see that doing this for each player will result in the same function.
+This method can similarly be used for each player following the same pattern.
+We should see that $v_1,s_1$ can be replaced with $v_i,s_i$ and we will get
+a similar result.
+
+Original problem had bounds $[a,b]$ which creates an offset by a. This results
+in the profit smaller than $a$ being obtained. 
 \end{multicols}
 \end{minipage}
 
