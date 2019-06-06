@@ -1,0 +1,373 @@
+\documentclass[12pt,letter]{article}
+\usepackage{geometry}\geometry{top=0.75in,left=0.75in,right=0.75in}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{xcolor}	% Color words
+%\usepackage{cancel}	% Crossing parts of equations out
+\usepackage{tikz}    	% Drawing 
+\usetikzlibrary{positioning} % prevent stuff from overlapping
+\usetikzlibrary{calc}   % 
+\usepackage{pgfplots}   % Other plotting
+\usepgfplotslibrary{colormaps,fillbetween}
+\usepackage{placeins}   % Float barrier
+\usepackage{hyperref}   % Links
+\usepackage{tikz-qtree} % Trees
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{multicol}
+\usepackage{listings}
+
+\tikzset{
+    %->, 
+    level distance = 12em,
+    minimum size=3em,
+    %edge from parent/.style={draw,thick},
+    level 1/.style={sibling distance=6em},
+    level 2/.style={sibling distance=3em},
+    thick/.style = {line width=1.5pt},
+    extra thick/.style = {line width=2.0pt},
+    %red node/.style={shape=circle,draw=red,fill=red!40,thick,inner sep=1.2},
+    %blue node/.style={shape=circle,draw=blue,fill=blue!40,thick,inner sep=1.2}
+}
+
+% Don't indent
+\setlength{\parindent}{0pt}
+% Function to replace \section with a problem name specifically formatted
+\newcommand{\problem}[1]{\vspace{3mm}\Large\textbf{{Problem {#1}\vspace{3mm}}}\normalsize\\}
+% Formatting function, like \problem
+\newcommand{\ppart}[1]{\vspace{2mm}\large\textbf{\\Part {#1})\vspace{2mm}}\normalsize\\}
+\newcommand{\documentation}[1]{\vspace{2mm}\large\textbf{\\Documentation{#1}\vspace{2mm}}\normalsize\\}
+% Formatting 
+\newcommand{\condition}[1]{\vspace{1mm}\textbf{{#1}:}\normalsize\\}
+
+\begin{document}
+\title{CIS 510 Assignment 3}
+\author{Steven Walton}
+\maketitle
+\problem{P1}
+
+\problem{Q1}
+\ppart{3}
+Consider a first price sealed-bid auction with n risk-neutral agents whose 
+valuations, $v_1,\cdots,v_n$, are independently drawn from a uniform distribution
+on the interval $[a,b]$. Prove that $\left(\frac{n-1}{n}v_1,\cdots,\frac{n-1}{n}v_n\right)$ is a Bayes-Nash equilibrium.
+
+We will follow a similar formula to the two player game that we did in class.
+We will let $\mathcal{V}$ be the space of players.
+
+\begin{minipage}{\textwidth}
+\begin{multicols}{2}
+\begin{align*}
+    &\int\limits_{\mathcal{V},a}^b u_1(s_1) dv\\
+    =&\int\limits_{\mathcal{V},a}^{s_1} u_1(s_1)dv + \int\limits_{\mathcal{V},s_1}^b u_1(s_1)dv\\
+    =&\int\limits_{\mathcal{V},a}^{s_1} u_1(s_1)dv + 0\\
+    =&\int\limits_{\mathcal{V},a}^{s_1} (v_1 - s_1)dv\\
+    =&(v_1 - s_1) \int\limits_{\mathcal{V},a}^{s_1}dv\\
+    =&(v_1 - s_1)(s_1^{n-1} - a)\\
+    =&s_1^{n-1}v_1 - s_1^{n} -av_1 + as_1\\
+\end{align*}
+
+\begin{align*}
+    &\left(\frac{d}{ds_1}\{s_1^{n-1}-s_1^{n}-av_1+as_1\}\right)\\
+    &= (n-1)v_1 - ns_1 + a\\
+    ns_1 &= (n-1)v_1 +a \\
+    s_1 &= \frac{n-1}{n}v_1 + \frac{a}{n}
+\end{align*}
+If we set the bounds to $[0,1]$ then the constant term drops out as $a\to 0$
+We can also see that doing this for each player will result in the same function.
+\end{multicols}
+\end{minipage}
+
+
+\problem{Q2}
+Image an unknown game which has three states $\{A,B,C\}$ and in each state the
+agent has two actions to choose from $\{Up,Down\}$. Suppose a game agent chooses
+actions according to some policy $\pi$ and generates the following sequence of
+actions and rewards in the unknown game:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+    $t$ & $s_t$ & $a_t$ & $s_{t+1}$ & $r_t$\\
+    \hline
+    0 & A & Down & B & 2\\\hline
+    1 & B & Down & C & 3\\\hline
+    2 & C & Up   & B & -2\\\hline
+    3 & B & Down & B & 0\\\hline
+    4 & B & UP   & A & 1\\\hline
+    5 & A & Down & C & -3\\\hline
+    6 & C & Down & A & 2\\\hline
+    7 & A & Up   & C & 1\\\hline
+    8 & C & Down & B & 2\\\hline
+    9 & B & Down & A & 2\\\hline
+    10& A & Up   & B & 3\\\hline
+\end{tabular}
+\caption{$\gamma = 0.5$ and $\alpha = 0.5$}
+\end{table}
+\ppart{a}
+Assume that all Q-values are initialized to 0. What are the Q-values learned by
+running Q-learning with the above experience sequence?
+
+We have the algorithm for updating values
+
+\[
+    Q(s,a) = T(s,a,s')[R(s,a,s') + \gamma V(s')
+\]
+and
+\[
+    V^\pi(s) = (1-\alpha)V(s) + \alpha[R(s,\pi(s),s') + \gamma V^\pi(s')
+\]
+Using these we will iterate over the values
+
+\begin{multicols}{2}
+\setlength{\columnsep}{1.5cm}
+    \setlength{\columnseprule}{0.4pt}
+\[
+    Q_{init}(s,a) = 
+    \begin{bmatrix}
+        0 & 0\\
+        0 & 0\\
+        0 & 0\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)0 + 0.5(2 + 0.5*0)=1
+\]
+\[
+    Q_0(s,a) = 
+    \begin{bmatrix}
+        0 & 1\\
+        0 & 0\\
+        0 & 0\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)0 + 0.5(3 + 0.5*0)=1.5
+\]
+\[
+    Q_1(s,a) = 
+    \begin{bmatrix}
+        0 & 1\\
+        0 & \frac32\\
+        0 & 0\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)0 + 0.5(-2 + 0.5*\frac32)=-\frac58
+\]
+\[
+    Q_2(s,a) = 
+    \begin{bmatrix}
+        0 & 1\\
+        0 & \frac32\\
+        -\frac58 & 0\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)\frac32 + 0.5(0 + 0.5*\frac32)=\frac98
+\]
+\[
+    Q_3(s,a) = 
+    \begin{bmatrix}
+        0 & 1\\
+        0 & \frac98\\
+        -\frac58 & 0\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)0 + 0.5(1 + 0.5*1)=\frac34
+\]
+\[
+    Q_4(s,a) = 
+    \begin{bmatrix}
+        0 & 1\\
+        \frac34 & \frac98\\
+        -\frac58 & 0\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)1 + 0.5(-3 + 0.5*0)=-1
+\]
+\[
+    Q_5(s,a) = 
+    \begin{bmatrix}
+        0 & -1\\
+        \frac34 & \frac98\\
+        -\frac58 & 0\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)0 + 0.5(2 + 0.5*0)=1
+\]
+\[
+    Q_6(s,a) = 
+    \begin{bmatrix}
+        0 & -1\\
+        \frac34 & \frac98\\
+        -\frac58 & 1\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)0 + 0.5(1 + 0.5*1)=\frac34
+\]
+\[
+    Q_7(s,a) = 
+    \begin{bmatrix}
+        \frac34 & -1\\
+        \frac34 & \frac98\\
+        -\frac58 & 1\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)1 + 0.5(2 + 0.5*\frac98)=\frac{57}{32}
+\]
+\[
+    Q_8(s,a) = 
+    \begin{bmatrix}
+        \frac34 & -1\\
+        \frac34 & \frac98\\
+        -\frac58 & \frac{57}{32}\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)\frac98 + 0.5(2 + 0.5*\frac34)=\frac{28}{16}
+\]
+\[
+    Q_9(s,a) = 
+    \begin{bmatrix}
+        \frac34 & -1\\
+        \frac34 & \frac{28}{16}\\
+        -\frac58 & \frac{57}{32}\\
+    \end{bmatrix}
+\]
+\[
+    V = (1-0.5)\frac34 + 0.5(3 + 0.5*\frac{28}{16})=\frac{37}{16}
+\]
+\[
+    Q_9(s,a) = 
+    \begin{bmatrix}
+        \frac{37}{16} & -1\\
+        \frac34 & \frac{28}{16}\\
+        -\frac58 & \frac{57}{32}\\
+    \end{bmatrix}
+\]
+\end{multicols}
+
+\ppart{b}
+In a model-based reinforcement learning, we first estimate the transition function
+$T(s,a,s')$ and the reward function $R(s,a,s')$. Write down the estimates of
+$T$ and $R$, estimated from the experience above. Write ``n/a" if not 
+applicable or undefined. 
+
+To figure this out we're going to reorder the above table for more clarity
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    $s_t$ & $a_t$ & $s_{t+1}$ & $r_t$\\
+    \hline
+    A & Down & B & 2\\\hline
+    A & Down & C & -3\\\hline
+    A & Up   & B & 3\\\hline
+    A & Up   & C & 1\\\hline
+    B & Down & A & 2\\\hline
+    B & Down & B & 0\\\hline
+    B & Down & C & 3\\\hline
+    B & UP   & A & 1\\\hline
+    C & Down & A & 2\\\hline
+    C & Down & B & 2\\\hline
+    C & Up   & B & -2\\\hline
+\end{tabular}
+\caption{Sorted by states and actions}
+\end{table}
+Here we can start calculating the transition states by taking a given $(s,a)$
+pair and determining the probability of going to another state, $s_{t+1}$. We
+can determine the reward by normalizing.
+\\
+\begin{minipage}{\textwidth}
+\begin{multicols}{2}
+\begin{align*}
+    T(A,Down,B) &= \frac12\\
+    T(A,Down,C) &= \frac12\\
+    R(A,Down,B) &= 1\\
+    R(A,Down,C) &= -\frac32\\
+    T(A,Up,B)   &= \frac12\\
+    T(A,Up,C)   &= \frac12\\
+    R(A,Up,B)   &= \frac34\\
+    R(A,Up,C)   &= \frac14\\
+    T(B,Down,A) &= \frac13\\
+\end{align*}
+\\
+\begin{align*}
+    T(B,Down,B) &= \frac13\\
+    T(B,Down,C) &= \frac13\\
+    R(B,Down,A) &= \frac25\\
+    R(B,Down,B) &= 0\\
+    R(B,Down,C) &= \frac35\\
+    T(C,Down,A) &= \frac12\\
+    T(C,Down,B) &= \frac12\\
+    R(C,Down,A) &= \frac12\\
+    R(C,Down,B) &= \frac12\\
+    T(C,Up,B)   &= 1\\
+    R(C,Up,B)   &= -2\\
+\end{align*}
+\end{multicols}
+\end{minipage}
+
+\ppart{c}
+Assume we had a different experience and ended up with the following estimates
+of the transition and reward functions
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+    $s$ & $a$ & $s'$ & $\hat{T}(s,a,s')$ & $\hat{R}(s,a,s')$\\\hline
+    A & Up & A & 1 & 12\\\hline
+    A & Down & B & 0.5 & 2\\\hline
+    A & Down & C & 0.5 & -3\\\hline
+    B & Up & B & 1 & 8\\\hline
+    B & Down & C & 1 & -6\\\hline
+    C & Down & C & 1 & 12\\\hline
+    C & Up & C & 0.5 & 2 \\\hline
+    C & Up & B & 0.5 & -2\\\hline
+\end{tabular}
+\end{table}
+
+\textbf{(i)} Give the optimal policy $\hat\pi^*(s)$ and $\hat{V}^*(s)$ for the 
+MDP with transition function $\hat{T}$ and reward function $\hat{R}$. Explain 
+your answers.
+
+Our two easiest policies are for being in states A and C where we already
+have the maximal reward in the MDP.
+
+So given state A, $\hat\pi^*(A)=$ Up we always pick A and similarly in state C we
+have the policy $\hat\pi^*(C)=$ Down to stay in C. Where in A we will always pick
+Up and in state C we will always pick Down. Because they have the same
+reward we know that finding one will result in the other.
+
+We have the infinite equation 
+\begin{align*}
+    V^*=&\hat{R}(s,a,s')(1 + \gamma + \gamma^2 + \cdots )\\
+    =&\hat{R}(s,a,s')\left(\frac{1}{1-\frac12}\right)\\
+    =&\hat{R}(s,a,s')2\\
+    =&24
+\end{align*}
+This gives us the value for both A and C, where 
+$\hat{R}(A,Up,s')=\hat{R}(C,Down,s')$.
+
+B is a little more difficult to find, but we can see that once we get to A or
+C we will use the above values.
+
+We can simply look at $\pi(B)=$ Up and see that we will always get a reward
+of 8, giving us $V(B,Up)=16$, similarly to above. We need to also look at 
+$\pi(B)=$ Down. We see that we get $-6 + \gamma V^*(C) = 6$. Here we know
+that $16>8$ $\therefore$ $\hat\pi^*(B) = $ Up with $V^*(B)=16$.
+
+\vspace{1cm}\textbf{(ii)} If we repeatedly feed this new experience sequence through our 
+Q-learning algorithm, what values will it converget to? Assume that 
+convergence is guarenteed.
+
+
+\end{document}
