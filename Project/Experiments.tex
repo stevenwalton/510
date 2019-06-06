@@ -1,0 +1,126 @@
+\section{Implementation and Experimentation}
+While we learned a lot from this project, we did not achieve the desired outcome.
+Along the way we learned much about the many different systems involved and 
+have created a path forward to continue the goal in our own time. 
+
+\subsection{Integration of Super Mario Kart}
+Most of the project was spent trying to accomplish just this task. While it was
+not achieved, we have learned much about the systems involved. Much more time 
+will be required to complete this, but much of the ground work has been laid 
+down. In this subsection we will discusss different parts of the integration
+and what went wrong.
+
+\subsubsection{Retro}
+While retro was created by a large company, it is not as well documented as
+OpenAI's gym. Specifically it is lacking much information in the integration
+of new games. For example, when the 
+\href{https://retro.readthedocs.io/en/latest/integration.html#integrating-a-game}
+{Official Guide} discusses integrating a new game, it does not mention that
+addresses need to be added the rambase. This was found by a lot of searching
+on the internet and then verifying with BizHawk. This may be because not every
+system has a rambase value. 
+
+Because of issues like these there was a lot of time spent reading the source
+code and learning how the functions worked that way. Retro also imports from
+gym, so source and documentation were read for both modules. While we were able
+to determine all the desired RAM values, we were not able to get the game running.
+
+\subsubsection{Finding RAM values}
+While the steps illustrated in an earlier section seem easy to implement, 
+there is a lot of work that must be done to determine the values that were used. 
+For this we used a tool called 
+\href{https://github.com/TASVideos/BizHawk/}{BizHawk}. BizHawk is a tool
+used by supped runners (people who try to finish a game as fast as possible) to 
+investigate RAM values. This is a Windows only tool. Some values may be easy to
+find, such as the second in SMK. To find the seconds on the clock we look for
+RAM addresses that are constantly changing. We then run around the race, performing
+different movements and we narrow down the list of addresses from hundreds of 
+thousands to a handful. From here it is generally easy to test each address, by
+modifying or freezing the values. When performing this we found the milisecond
+address and then opened up RAM watch and looked at the adjacent values, which 
+matched the clock. It is common for values to be grouped like this. 
+
+Other values may be much more difficult to find. For example in SMK the address
+to determine your rank is 0x001040. Unfortunately to get the desired value
+you have to divide the RAM's value by two and add one. Addresses like this 
+can be extremely difficult to find and commonly speed runners script this. I 
+was unable to find these on my own and was able to get help from a prominant
+speed runner named \href{https://www.youtube.com/user/sethbling}{Seth Bling}.
+He provided me a Lua script to find these values. 
+
+\subsection{Trying without Retro}
+When we had emailed SethBling he mentioned that he was working on a similar 
+project and offered me his code as a starting point. Intention was to be able
+to use his setup to handle the environment and then rewrite the learner with
+basic q-learning and then upgrade to a deep Q network using pytorch. While his
+scripts helped me find the missing RAM values I could not get his code running
+on my, or several other, machines. Going through his code helped me understand
+some of the problems I was having in retro. Due to time constraints we decided
+to head back to work with retro and concentrate on the main goal, creating a
+q-learner.
+
+\subsection{Back to Retro}
+Fortunately retro comes with a ROM for testing. Retro's environment should allow
+for any game to be played with the same ``play" code. It was decided that the
+best option to move forward would be to integrate into this environment testing
+on the provided ROM and then if there was time left to return back to the 
+integration process. The first part has been successful, while there was no
+time left to finish the integration process.
+
+\subsubsection{A Basic Q-Learner}
+Retro provies both a random player and a greedy solver as baselines and examples.
+These were used as the basis for learning how the system operated, and they are
+included in the main file as playable options. These files allowed us to explore
+the values and system. Once we knew how the bindings worked we were able to 
+implement a simple Q-Learner. A Q-Learner is dependent upon the Bellman Equation.
+To create this learner we use something called a Q-Matrix. A Q-Matrix is composed
+of actions and states as indicies and the value of those actions in that state
+as entries. Using this we can iteratively find the best policy to accomplish
+a task.
+\begin{align*}
+    Q(s_t,a_t) &= Q(s_t,a_t) + \alpha(r + \gamma \max_{a_t+1}(Q(s_{t+1},a_{t+1}) - Q(s_t,a_t)))\\
+    & \alpha: \textsf{ Learning Rate}\\
+    & r: \textsf{ Reward at current state}\\
+    & \gamma: \textsf{ discount rate}
+\end{align*}
+This is a recursive equation where we update the reward by looking ahead to see
+the rewards we previously received by doing certain actions. There are a few
+things to notice about this equation. The first is that each $Q(s_{t+1},a_{t+1})$ 
+follows the same equation, by recursion. The next part is that the discount rate,
+$\gamma$, will be multiplied by itself each time we recurs. The discount helps
+us find solutions that are not just locally optimal, but pick actions that 
+help us gain future rewards. Our discount rate sets how heavily we weight those 
+future rewards. The reason we do this is so that our learner cares more about
+immediate future rewards than rewards that are distant. If this were not used
+our learner could spend all eternity doing nonsense actions and then just before
+the eternity is over it could reach the goal. We want the goal to be reached
+sooner than later, so we implement this value. 
+
+There is another subtle aspect to making a Q-Learner work that isn't apparent
+from this equation. A Q-Learner is composed of two competing entities, which
+we will call the gambler and the book keeper. These two entities are similar
+to a random agent and a greedy agent. The gambler wants to explore and try 
+actions it has has never tried before. On the other hand, the book keeper has
+recorded the best actions and strictly goes by the book, following what it 
+says the best actions are. While the book keeper is extremely important, the 
+gambler is needed to help escape from local optimal solutions. 
+
+Another subtle aspect is that we pick the future action with the maximal reward.
+While iterating over a large solution space there may be many future actions that
+have the same value. In this case we could simply just pick a random one, but
+that might not be optimal. We can do better by creating a bias towards trying
+actions that we haven't tried before, given the same future reward. We can
+create the following exploration function
+\begin{align*}
+    f(u,n) &= u + \frac{k}{n}\\
+    & u: \textsf{ utility from action}\\
+    & n: \textsf{ number of times action has been taken}\\
+    & k: \textsf{ a constant}
+\end{align*}
+If $k=0$ then we do not care about how many times an action has been taken. 
+However if we use a $k$ value then we can slightly offset our returned rewards
+to encourage more or less exploration, depending on the value of $k$. 
+
+\subsection{Experimentation}
+By using the above concepts we can put together a machine learning algorithm
+that can play videogames. 
