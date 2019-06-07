@@ -1,0 +1,57 @@
+\section{Documentation}
+\label{sec:doc}
+The code for this project can be found at 
+\href{https://github.com/stevenwalton/Retro-Learner}{Github: stevenwalton/Retro-Learner}
+Within there includes a README and requirements for running the code. The help
+function is shown below and tells the user how to run the software. The user
+must run the program either interactively (-i), with the brute forcer (-b),
+with a random player (-r), or with the Q-Learner (-q). See ``(Required) Learner 
+Type" below. Options for the Q-Learner are specified under 
+``Learning Options" and retro environment options are under ``Retro Argumnets".
+There is an additional argument to time, which shows the elapsed time since
+the program was run and when a new maximal reward was received. 
+
+\begin{minipage}{7.5in}
+\begin{lstlisting}[basicstyle=\footnotesize]
+python ~/Programming/Retro-Learner/main.py -h
+usage: OpenAI Retro Learner [-h] (-i | -b | -r | -q) [--game GAME]
+                            [--state STATE] [--scenario SCENARIO] [-s SAVE]
+                            [--timestep-limit TIMESTEP_LIMIT] [--render] [-fs]
+                            [--discount DISCOUNT] [--gamma GAMMA]
+                            [--depth DEPTH] [--explore EXPLORE]
+                            [--gambler GAMBLER] [-t]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t, --time            Show time between best actions (default: False)
+
+(Required) Learner Type:
+  -i, --interactive     Run the game interactively (default: False)
+  -b, --brute           Run the game with retro's brute forcer (default:
+                        False)
+  -r, --random          Run the game with random 'learner' (default: False)
+  -q, --qlearn          Run the game with Q-Learner (default: False)
+
+Retro Arguments:
+  --game GAME           Specify the game to run. (default: Airstriker-Genesis)
+  --state STATE         Specify the starting state. (default: State.DEFAULT)
+  --scenario SCENARIO   Specify the scenario (default: None)
+  -s SAVE, --save SAVE  Save best results to a bk2 file (default: None)
+  --timestep-limit TIMESTEP_LIMIT
+                        Set timestep limit (default: 100000000)
+  --render              Render game (unstable) (default: False)
+  -fs , --frame-skip    Specify the number of frame skips (advanced) (default:
+                        4)
+
+Learning Options:
+  --discount DISCOUNT   Specify the discount for the learner (default: 0.8)
+  --gamma GAMMA         Specify the learning rate of the learner (default:
+                        0.8)
+  --depth DEPTH         Q Learning option: max depth we lookahead (default: 1)
+  --explore EXPLORE     Q Learning option: how we weight our exploration
+                        function. f(u,v) = u + k/v (default: 0)
+  --gambler GAMBLER     Q Learning option: changes how often we explore random
+                        actions. The higher the number the less exploration we
+                        do. Values >=1 do not explore. (default: 0.8)
+\end{lstlisting}
+\end{minipage}
