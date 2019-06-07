@@ -1,16 +1,33 @@
 \section{Project Description}
 In this project we create a Q-Learning algorithm that is able to play classic,
 or ``retro", videogames. These games are widely considered to be NP-Hard or
-many times PSPACE-Hard\cite{DBLP}
+many times PSPACE-Hard \cite{DBLP}. PSPACE-Hard problems are not only hard to
+compute, but also hard to verify. This should match intuition of many videogames
+as it is almost always unclear what an optimal strategy is. This is largely due
+to the number of states in a single game. While actions may be few in number,
+generally limited to the buttons one can press, each frame in the game can 
+generally be considered a new state. This makes even calculating the number
+of states extremely difficult. 
 
-In this project we set out to create two competitive agents that will be able to
-play Super Mario Kart (SMK) against one another and the game's agents. An 
-extra goal is to be able to play against these agents in a match. A full 
-description of Super Mario Kart can be found in the 
-\href{https://www.nintendo.co.jp/clvs/manuals/common/pdf/CLV-P-SAAFE.pdf}
-{official documentation}.
+At the beginning of this project we set out with the goal to create a Q-learner
+that would be able to play Super Mario Kart (SMK) \cite{SMK} through use of 
+OpenAI's Retro environment \cite{retro}. Retro creates an environment that 
+abstracts out emulation and helps developers focus on creating algorithms,
+specifying actions, and rewards. Stretch goals were to get a deep Q network 
+(DQN) working and have several agents play against one another.
 
-During the project we had failed to import SMK into OpenAI's retro gym but we
-were still able to successfully implement a Q-Learner that is able to play 
-games that correctly import into retro. We have tested the learner on
-Airstriker Genesis, the default game, and Donkey Kong Country. 
+While we were not able to reach the goal of getting a reinforcement algorithm
+playing SMK, we were able to demonstrate feasibility in retro's environment on
+several other games, which had already be correctly integrated.
+
+%In this project we set out to create two competitive agents that will be able to
+%play Super Mario Kart (SMK) against one another and the game's agents. An 
+%extra goal is to be able to play against these agents in a match. A full 
+%description of Super Mario Kart can be found in the 
+%\href{https://www.nintendo.co.jp/clvs/manuals/common/pdf/CLV-P-SAAFE.pdf}
+%{official documentation}.
+%
+%During the project we had failed to import SMK into OpenAI's retro gym but we
+%were still able to successfully implement a Q-Learner that is able to play 
+%games that correctly import into retro. We have tested the learner on
+%Airstriker Genesis, the default game, and Donkey Kong Country. 
