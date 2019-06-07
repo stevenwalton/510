@@ -1,38 +1,97 @@
-\section{Short Background}
+\section{Background}
 In this section we will discuss the various tools and break down how we will
 formulate the project. In the next section we will discuss our proposition of
 how to achieve these goals.
 
-For this project we will be using a Deep Q Learner. A simple Q learner and
-explanation can be found in this 
-\href{https://gist.github.com/stevenwalton/4e4b664d494b35be2d6882c7e50eb893}
-{gist} that I wrote. A link is also provided to explain how a deep Q learner
-works. 
+\subsection{Q-Learning}
+For this project we will be using a Q-Learning algorithm to play these
+videogames. The Q-Learning algorithm is a simple reinforcement learner that
+follows Bellman's Equation. A Q matrix can be defined where each row represents
+a different state and each column represents an action for that state. These
+can be used to solve different Markov Decision Processes (MDPs). An example
+MDP is shown in Figure~\ref{fig:MDP}.
 
-For this problem we will be using OpenAI's \href{https://github.com/openai/retro/}
-{retro gym}. Similar to \href{https://github.com/openai/gym}{gym}, retro gym 
-creates and environment that allows us to play ``retro" video games. It handles
-all the emulation and provides us with bindings to the buttons that would be
-pressed on an actual controller. Retro also provides some states and actions for
-common games, though not Super Mario Kart (more on this later). Using this
-module a user can focus on just creating a reinforcement learner to learn to 
-play the game and they do not have to think much about the environment or action
-states, that is: they do not need to formulate the quality matrix to create a
-basic learner. 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.6\textwidth]{MDP.pdf}
+\caption{Sample Markov Decision Process}
+    \label{fig:MDP}
+\end{figure}
+Each node, labeled $s_i$, represents a state and the connections between nodes
+represent actions. Each action has an associated probability with it. There 
+are certain ``rewards" that an actor gets for taking certain actions, $a$, which
+leaves them in a new state, $s'$. We then want to find a set of actions, also
+known as a policy ($\pi$) that gives us our maximal value ($V$). Knowing this
+we want to create a learner that will learn the best policy, set of actions,
+that will maximize its reward. The Bellman Equation, Equation~\ref{eq:Bell}, 
+does just this. In this equation $\alpha$ represents the learning rate, 
+$\gamma$ is the discount rate, and $Q(s',a')$ is the value in our $Q$ matrix
+given the next state and action.
+\begin{equation}
+    Q(s,a) = Q(s,a) + \alpha(r + \gamma \max_{a'}Q(s',a') - Q(s,a))
+    \label{eq:Bell}
+\end{equation}
+Essentially what we are doing is looking at the reward we get for taking an 
+action and all future rewards given our best policy. A discount rate is 
+applied so that rewards that are achieved sooner are weighted more heavily
+than rewards further away. A simple example of why we might want to do this
+is because if we give a mouse a reward for completing a maze we want the mouse
+to finish the maze as fast as possible and not take an infinite time to finish.
+The learning rate applies a weight to to our new reward and future rewards. 
+Additionally all actions are probabilistic. If we have the actions forward,
+left, and right, if we select forward there is still a probability that the
+agent goes left or right. This is commonly known as a Monte-Carlo walk (or
+Drunken Walk). 
+
+For our videogames we discussed that there are potentially an unknown number
+of states. There are also limitations in computational hardware. To account
+for this we can simply limit the depth of our lookahead values. This will
+create an approximate Q-Learner and allow us to solve problems with unknown
+or infinite number of states. 
+
+\subsection{Deep Q-Learning}
+An extension of Q-Learning is deep Q-Learning (DQN) is by using a neural network 
+to compute the above solution. We can accomplish this because a neural network 
+is a universal function approximater, meaning it can approximate any function. 
+Following DeepMind's work~\cite{DeepMind}, if we rewrite the Bellman Equation as
+\begin{equation}
+    Q^*(s,a) = \mathbb{E}_{s'\sim\mathcal{E}}\left[r + \gamma\max_{a'}Q^*(s',a')\right]
+\end{equation}
+We can generate a loss function $L_i(\theta_i)$
+\begin{equation}
+    L_i(\theta_i) = \mathbb{E}_{s,a\sim\rho(\dot)}\left[(y_i - Q(s,a;\theta_i))^2\right]
+\end{equation}
+where $y_i = \mathbb{E}_{s'\sim\mathcal{E}}\left[r + \gamma\max_{a'}Q(s',a';\theta_{i-1})\right]$. Recognizing that this is the same format as the Mean Square
+Error (MSE) we can generate the following gradient (Equation~\ref{eq:DQNgrad}).
+
+\begin{equation}
+    \nabla_{\theta_i}L_i(\theta_i) = 
+\mathbb{E}_{s,a\sim\rho(\dot);s'\sim\mathcal{E}}
+\left[\left(r + \gamma\max_{a'}Q(s',a';\theta_{i-1}) - Q(s,a;\theta_i)\right) 
+\nabla_{\theta_i}Q(s,a;\theta_i)\right]
+\label{eq:DQNgrad}
+\end{equation}
+
+Here we have everything we need to create a DQN. The property of universal 
+approximation handles the lookahead depth for us. This is because a
+neural network iterates to create an approximate function. Being that our
+games are NP- or PSPACE-Hard this is reasonable.
 
 \subsection{Integration into Retro}
-Currently we have completed the task of integrating the Super Mario Kart package
-into retro's engine, but this is not enough to play the game. Retro relies on 
-different ``states", which can be defined as different starting states. 
+Unfortunately SMK was not able to be integrated into Retro's environment, but
+much about the environment and integration was learned along the way.
+Retro relies on different ``states", which can be defined as different 
+starting states. 
 This is placed in quotes because the state will continuously be changing as
 the agent progresses through the level, more on this later. For
-this project we are starting with the scenario where there is a single agent
+this project we started with the scenario where there is a single agent
 playing the 50cc Mushroom Cup. Essentially we set a place in the game where we
 want our agent to start. Retro provides a UI where we can interactively play
 the game and save specific states. For this example our initial state looks like
 this:
 \begin{figure}[h!]
     \centering
+    %\includegraphics[clip,trim=0 500 0 10,width=0.55\textwidth]{1P_GrandPrix_50cc_MushroomCup.png}
     \includegraphics[width=0.55\textwidth]{1P_GrandPrix_50cc_MushroomCup.png}
     \caption{Initial state for 1P\_GrandPrix\_50cc\_MushroomCup.state}
 \end{figure}
@@ -101,6 +160,10 @@ below
 \end{minipage}
     \caption{Snippets from data.json and scenario.json for SNES Super Mario Kart}
 \end{figure}
+The data.json file contains hex addresses that represent the RAM address that the
+game uses to determine certain aspects of the game. We also need to add these
+to a rambase value that is given by retro (warning: this is not noted within
+the documentation but is required).
 Additionally, scenario.json can contain information about the action set. We can
 either restrict our action set to a specific set of buttons, and button 
 combinations, or we can expose all possible set of actions to the agent. Initially
@@ -120,76 +183,30 @@ The controls action set will be defined as \{\{B\},\{A\},\{Y\},
 \{R\},\{A,B\},\{B,R\},\{A,R\}\}. The full action set is the combination of 
 actions from the steering set and the control set. 
 
+RAM addresses can be found by using emulator tools, such as BizHawk~\cite{BH}, 
+that allow for hex searching and manipulation. Some values are easy to find 
+since their values in RAM identically match the values displayed on the screen.
+Other values may be more difficult to find given that they may be manipulated
+by the program. An example of finding a memory address in BizHawk is shown in
+Figure~\ref{fig:hex} in the Appendix. We were unable to find all the required
+address on our own, but a prominant Speed-Runner\footnote{People who compete
+to finish a game as quickly as possible} named SethBling~\cite{SethBling} 
+kindly provided me with Lua scripts to help me find the missing addresses.
+Section~\ref{sec:RAM} provides a more detailed discussion on finding RAM values.
+
 To summarize the integration: we need to fully define how our agent will receive
 rewards, when the agent ends, and our action set.
-
 
 \subsection{Rewards}
 Defining rewards is always a challenging problem in any machine learning task. 
 There are many fantastic examples where a well thought out reward function leads
-to outcomes not expected by the machine learning engineer. For this game there
-are several criteria that will help us create different reward functions to test
-out. 
+to outcomes not expected by the machine learning engineer. Rewards can be 
+simple or extremely complex. For example a simple reward function for Super
+Mario Bros might be to use the x position on the screen and reward the agent
+for making forward progression through the level. 
 
-First off, we need to have a clear goal. Since Super Mario Kart is a competitive
-racing game, each player is given a ranking when they finish the race. This
-gives us a well defined goal: be first. Since we will be training over a cup,
-multiple tracks, we do not need to place first in every race to win the cup, but
-placing first in every race will always result in placing first in the cup. The
-position can be seen in the bottom right of the screen, in our picture we start
-in 8th place (starting position changes depending on finishing position of the 
-previous race).
+A more detailed discussion of rewards for Super Mario Kart are given in the
+appendix~\ref{sec:SMKRewards}. Additionally sections are provided for 
+determining the end state~\ref{sec:endstate} and visualizing the environment
+\ref{sec:env} specifically in the SMK world.
 
-The second factor that is key is that we have a clock, seen in the upper right
-of the screen. While we want to place first every time, setting a reward function
-purely based on position will only train the agent to beat the game's AI. Instead
-we want the agent to finish the race as fast as possible. 
-
-There are other factors to include that we will not consider until combinations 
-of the first two are tested. Such factors include that the number of coins, 
-with maximum of 10, determine how fast one can go. So having more coins helps
-optimize the first two, but may be harder to incorporate. Additionally, there
-are pieces on the may that boost the player. We hope that the agent will 
-recognize these features on its own and that we do not need to assign a reward
-for using these. Including features like these have a higher potential to create
-an undesirable reward function. So first we will keep the reward system simple 
-and iterate as needed.
-
-\subsection{Determining Finish}
-As mentioned previously, by incorporating a game that is not already defined by
-retro we need to tell retro when we are done. To accomplish this we will actually
-need to play this game in an emulator and record the state when finishing a race
-as well as when we finish a cup. This task is not yet accomplished but is not 
-expected to be exceedingly difficult. 
-
-\subsection{Seeing the Environment}
-We have mentioned that we will only be using the top half of the screen, the
-reason being is that this is where the agent gains the most information about
-their environment. Additionally, when playing in 2 player mode, the bottom half
-will be used for that agent's view. Therefore to train properly we need to only
-rely on the top half. 
-
-Retro does not create a way for the agent to ``see" its current state. To 
-accomplish this we need to turn this Q learner into a Deep Q learner. To do that
-we first create a Convolutional Neural Network (CNN) that will determine our
-state. Using this we will have a simple network which will then determine the
-action that needs to be taken at any given state, position on the track. 
-
-A simple way to think about this flow is with the following image.
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{conv_agent.png}
-    \caption{Example flow of network with Mario Brothers}
-\end{figure}
-Using the position of Mario and other objects on the screen, the agent needs
-to determine if it will run or jump. Our action set will be slightly more
-complicated. 
-
-\subsection{Policy Gradient}
-Since we do not have labeled solutions to perform an error with back propagation,
-our reinforcement learner uses a policy gradient. Having defined our reward 
-structure we can teach the network that certain actions are better than others.
-Essentially we are teaching the learner a set of actions that will beat the game.
-In a solved game we would expect this set of actions to converge on the solved
-action sequence, but in a game like this we do not have such a solution so can
-only base it upon how well it ranks. 

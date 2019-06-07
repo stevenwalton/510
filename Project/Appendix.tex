@@ -1,0 +1,96 @@
+\section{Appendix}
+\subsection{SMK Rewards}
+\label{sec:SMKRewards}
+First off, we need to have a clear goal. Since Super Mario Kart is a competitive
+racing game, each player is given a ranking when they finish the race. This
+gives us a well defined goal: be first. Since we will be training over a cup,
+multiple tracks, we do not need to place first in every race to win the cup, but
+placing first in every race will always result in placing first in the cup. The
+position can be seen in the bottom right of the screen, in our picture we start
+in 8th place (starting position changes depending on finishing position of the 
+previous race).
+
+The second factor that is key is that we have a clock, seen in the upper right
+of the screen. While we want to place first every time, setting a reward function
+purely based on position will only train the agent to beat the game's AI. Instead
+we want the agent to finish the race as fast as possible. 
+
+There are other factors to include that we will not consider until combinations 
+of the first two are tested. Such factors include that the number of coins, 
+with maximum of 10, determine how fast one can go. So having more coins helps
+optimize the first two, but may be harder to incorporate. Additionally, there
+are pieces on the may that boost the player. We hope that the agent will 
+recognize these features on its own and that we do not need to assign a reward
+for using these. Including features like these have a higher potential to create
+an undesirable reward function. So first we will keep the reward system simple 
+and iterate as needed.
+
+\subsection{Determining Finish}
+\label{sec:endstate}
+As mentioned previously, by incorporating a game that is not already defined by
+retro we need to tell retro when we are done. To accomplish this we will actually
+need to play this game in an emulator and record the state when finishing a race
+as well as when we finish a cup. This task is not yet accomplished but is not 
+expected to be exceedingly difficult. 
+
+\subsection{Seeing the Environment}
+\label{sec:env}
+We have mentioned that we will only be using the top half of the screen, the
+reason being is that this is where the agent gains the most information about
+their environment. Additionally, when playing in 2 player mode, the bottom half
+will be used for that agent's view. Therefore to train properly we need to only
+rely on the top half. 
+
+Retro does not create a way for the agent to ``see" its current state. To 
+accomplish this we need to turn this Q learner into a Deep Q learner. To do that
+we first create a Convolutional Neural Network (CNN) that will determine our
+state. Using this we will have a simple network which will then determine the
+action that needs to be taken at any given state, position on the track. 
+
+A simple way to think about this flow is with the following image.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{conv_agent.png}
+    \caption{Example flow of network with Mario Brothers}
+\end{figure}
+Using the position of Mario and other objects on the screen, the agent needs
+to determine if it will run or jump. Our action set will be slightly more
+complicated. 
+
+\FloatBarrier
+\subsection{RAM Addresses}
+\label{sec:RAMVals}
+\begin{table}
+\centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Address  & Attribute\\\hline
+        0x000101 & Milliseconds\\\hline
+        0x000102 & Seconds\\\hline
+        0x000104 & Minutes\\\hline
+        0x000148 & Lap Size\\\hline
+        0x000E00 & Coins\\\hline
+        0x001040 & Rank\\\hline
+        0x0010C1 & Lap\\\hline
+        0x0010DC & Checkpoint\\\hline
+\end{tabular}
+    \caption{RAM Addresses for key features in SMK}
+\end{table}
+\begin{itemize}
+    \item Lap: a value of 133 represents the end of the race
+and that one needs to subtract 128 from this number to determine the current
+lap.
+    \item Rank: Divide by 2 and add 1
+    \item Lap Size: Represents the length of the track
+    \item Checkpoint: Shows distance from the start of the track. Increments up to the lap size - 1. Eg: if Lap Size = 36, then Checkpoint=$N\%36$.
+\end{itemize}
+
+
+\FloatBarrier
+\subsection{Figures}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{Ram.png}
+\caption{Finding Clock Addresses in BizHawk}
+\label{fig:hex}
+\end{figure}

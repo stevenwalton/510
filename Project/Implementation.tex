@@ -1,0 +1,95 @@
+\section{Implementation}
+While we learned a lot from this project, we did not achieve the desired outcome.
+Along the way we learned much about the many different systems involved and 
+have created a path forward to continue the goal in our own time. 
+
+\subsection{Integration of Super Mario Kart}
+Most of the project was spent trying to accomplish just this task. While it was
+not achieved, we have learned much about the systems involved. Much more time 
+will be required to complete this, but much of the ground work has been laid 
+down. In this subsection we will discuss different parts of the integration
+and what went wrong.
+
+\subsubsection{Retro}
+While retro was created by a large company, it is not as well documented as
+OpenAI's gym. Specifically it is lacking much information in the integration
+of new games. For example, when the 
+Official Guide discusses integrating a new game, it does not mention that
+addresses need to be added the rambase. This was found by a lot of searching
+on the internet and then verifying with BizHawk and addresses from other games. 
+This may be because not every system has a rambase value, but is specifically
+required in Super Nintendo games.
+
+Because of issues like these there was a lot of time spent reading the source
+code and learning how the functions worked that way. Retro also imports from
+gym, so source and documentation were read for both modules. While we were able
+to determine all the desired RAM values, we were not able to get the game running.
+
+\subsubsection{Finding RAM values}
+\label{sec:RAM}
+While the steps illustrated in an earlier section seem easy to implement, 
+there is a lot of work that must be done to determine the values that were used. 
+As mentioned previously, some values were easy to find and others aren't. 
+Using a tool like BizHawk this can be a tedious task. BizHawk looks at different
+game states and returns the addresses and values associated with them. Since
+there are hundreds of thousands of addresses, one needs to be clever by
+searching as many states and executing as many actions as possible until there
+are a reasonable number of addresses left. One can then verify that an address
+contains the desired value by freezing or modifying it. This was easy for an
+address such as the clock, because the miliseconds were always increasing and
+the seconds and minutes were located near one another in memory, but was 
+overwhelming for addresses like rank and lap number. I would not have found
+these values without the help of SethBling, as these values do not line up with
+the values that appear on the screen. Additionally there is a delay in when 
+the values are updated within the RAM and when the values are displayed on the
+screen. A list of these values and equations can be found in the Appendix
+\ref{sec:RAMVals}
+
+\subsection{Trying without Retro}
+When we had emailed SethBling he mentioned that he was working on a similar 
+project and offered me his code as a starting point. The intention was to be able
+to use his setup to handle the environment and then rewrite the learner with
+basic q-learning and then upgrade to a deep Q network using pytorch. While his
+scripts helped me find the missing RAM values I could not get his code running
+on my, or several other, machines. Going through his code helped me understand
+some of the problems I was having in retro. Due to time constraints we decided
+to head back to work with retro and concentrate on the main goal, creating a
+q-learner. 
+
+\subsection{Back to Retro}
+Fortunately retro comes with a ROM for testing. Retro's environment should allow
+for any game to be played with the same ``play" code. It was decided that the
+best option to move forward would be to integrate into this environment testing
+on the provided ROM and then if there was time left to return back to the 
+integration process. The first part has been successful, while there was no
+time left to finish the integration process.
+
+\subsubsection{A Basic Q-Learner}
+Retro provides both a random player and a greedy solver as baselines and examples.
+These were used as the basis for learning how the system operated, and they are
+included in the main file as playable options. These files allowed us to explore
+the values and system. Once we knew how the bindings worked we were able to 
+implement a simple Q-Learner based on Equation~\ref{eq:Bell}. 
+
+A Q-Learner is dependent upon the Bellman Equation.
+To create this learner we use something called a Q-Matrix. A Q-Matrix is composed
+of actions and states as indices and the value of those actions in that state
+as entries. Using this we can iteratively find the best policy to accomplish
+a task.
+
+While iterating over a large solution space there may be many future actions that
+have the same value. In this case we could simply just pick a random one, but
+that might not be optimal. We can do better by creating a bias towards trying
+actions that we haven't tried before, given the same future reward. We can
+create the following exploration function, defined in Equation~\ref{eq:explore}.
+\begin{align}
+    f(u,n) &= u + \frac{k}{n}\label{eq:explore}\\
+    & u: \textsf{ utility from action}\nonumber\\
+    & n: \textsf{ number of times action has been taken}\nonumber\\
+    & k: \textsf{ a constant}\nonumber
+\end{align}
+In this equation, if $k=0$ then we do not care about how many times an action 
+has been taken.  However if we use a $k$ value then we can slightly offset our 
+returned rewards to encourage more or less exploration, depending on the 
+value of $k$. 
+
