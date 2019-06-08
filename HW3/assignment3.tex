@@ -46,8 +46,121 @@
 \author{Steven Walton}
 \maketitle
 \problem{P1}
+Note: This code uses Cplex, which does not work on python 3.7. This code was
+written with python 3.6.5 and will be assumed that the user is using a similarly 
+compatible python version. 3.5 and 3.6 should be compatible with this code
+though it is not tested.
+
+Below is the help file for the COBRA-C program. 
+\begin{lstlisting}
+python COBRA-C.py -h
+usage: COBRA-C.py -p <parameter file> -i <payoff file> -o <output file>
+-p, --params     sets the parameter file
+-i, --payoff     sets the payoff file
+-o, --output     sets the output file. Defaults to out.csv
+-d, --delimiter  sets the delimiter of ALL files. Defaults to csv
+\end{lstlisting}
+We can simply run the program by using the following command
+\begin{figure}[h]
+    \centering
+    \begin{lstlisting}
+python COBRA-C.py -p param.csv -i payoff.csv
+    \end{lstlisting}
+\end{figure}
 
 \problem{Q1}
+\ppart{1}
+Suppose a seller runs a second-price, sealed-bid auction for a painting.
+There are two bidders with independent, private values. The seller does not know their precise
+valuations, but knows: (a) each bidder i has one of three values, $v_i = 2$, 
+$v_i = 4$ or $v_i = 8$; and (b)
+each of these values is equally likely (i.e., occurs with probability $\frac13$).
+When running the auction, if
+the two bids are tied (say, at x), the winner is chosen at random (and pays x).
+
+1. Assume both bidders use their dominant strategies for bidding in a second-price auction.
+What is the seller’s expected revenue in this auction? Please explain your answer.
+
+We need to examine all possible payoffs by taking the average of each outcome
+where the expectation value is
+\[
+    E[X] = \sum\limits_{i=1}^{k}x_ip_i
+\]
+$p_i$ represents the given probability for a given value $x_i$
+We therefore have the expected revenue of
+\begin{align*}
+    E[X] &= \frac59*2 + \frac39*4 + \frac19*8\\
+    &= \frac{10}{3}
+\end{align*}
+
+2. Now the seller decides to set a reserve price of r. This means that if the highest bid is below
+$r$, the seller will not sell the item. If the highest bid is at least $r$, then the painting will go
+to the highest bidder, and the winner will pay the maximum of $r$ and the second-highest bid.
+Suppose the reserve price is set to $r=4$. Assume both bidders use their dominant strategies.
+What is the seller’s expected revenue in this auction? Please explain your answer. If the
+expected revenue increases or decreases relative to your answer in part (1), give a qualitative
+explanation for why this change occurs.
+
+We do the same thing as part 1 but set a minimum bid of 4.
+\begin{align*}
+    E[X] &= \frac19*0 + \frac79*4 + \frac19*8\\
+    &= 4
+\end{align*}
+
+3. Is there a better reserve price than $r=4$ (i.e., that will provide more revenue for the seller)?
+Give a brief justification for your response.
+
+By using a reserve price of 8 we can get a better revenue for the seller
+\begin{align*}
+    E[X] &= \frac49*0 + \frac59*8\\
+    &= \frac{40}{9}
+\end{align*}
+
+
+\ppart{2}
+Consider an IPV setting where three bidders are risk-neutral and each
+bidder’s valuation is drawn from a uniform distribution over the range $[a, b]$. Describe the optimal
+auction using virtual valuation and bidder-specific reserve price for this setting. What is the seller’s
+expected revenue using this optimal auction mechanism, given bidders play the dominant strategy.
+
+For this we know that there is a probability density function (PDF) of
+$\frac{1}{a-b}$ and a cumulative distribution function (CDF) of $\frac{v_i - a}{b-a}$
+which gives us the virtual validation function
+\begin{align*}
+    \psi_i(v_i) &= v_i - \frac{1-F_i(v_i)}{f_i(v_i)}\\
+    &= v_i - \frac{\frac{v_i-a}{b-a}}{\frac{1}{b-a}}\\
+    &= v_i - (b-v_i-2a)\\
+    &= 2a-b
+\end{align*}
+We then can calculate the reserve price by setting $\psi=0$ which gives us
+$r=\frac{b}{2}$. We note that the reserve price is the same for all players.
+
+We then need to consider the following cases.
+
+1) $v_1,v_2<r$:
+In this case neither player wins so both of their expected revenues is 0.
+This happens with probability $(r-a)^2$ (we just take the area from between $a$ and
+$r$)
+
+2) $v_i>r,v_j<r$:
+In this case the second highest bid is the reserve price, r. The probability that
+this happens is $(b-r)(r-a)$ 
+
+3) $v_i,v_j>r$:
+In this case we have the probability that both are above as $(b-r)^2$ and need
+to find the minimum
+\begin{align*}
+    &\min\{E[v_1],E[v_j]\}\\
+    &= \frac{1+2r}{3}
+\end{align*}
+
+Now we need to sum these to get the total expected revenue
+\begin{align*}
+    =&(r-a)^2*0 + (b-r)(r-a)*r + (b-r)^2*\frac{1+2r}{3}\\
+    =&\frac13\left(-br^2 -r^3 -3abr + 3ar^2 + b^2 -2br + 2rb^2 + r^2\right)
+\end{align*}
+
+
 \ppart{3}
 Consider a first price sealed-bid auction with n risk-neutral agents whose 
 valuations, $v_1,\cdots,v_n$, are independently drawn from a uniform distribution
@@ -370,8 +483,37 @@ $\pi(B)=$ Down. We see that we get $-6 + \gamma V^*(C) = 6$. Here we know
 that $16>8$ $\therefore$ $\hat\pi^*(B) = $ Up with $V^*(B)=16$.
 
 \vspace{1cm}\textbf{(ii)} If we repeatedly feed this new experience sequence through our 
-Q-learning algorithm, what values will it converget to? Assume that 
-convergence is guarenteed.
+Q-learning algorithm, what values will it converges to? Assume that 
+convergence is guaranteed.
+
+We can use the equation
+\[
+    V_{k+1}^\pi(s)\gets\sum\limits_{s'}T(s,\pi(s),s')\left[R(s,\pi(s),s') + \gamma V_k^\pi(s')\right]
+\]
+If we start with our optimal policies above we have
+
+\begin{center}
+Q=
+\begin{tabular}{c|cc}
+    & Down & Up\\\hline
+    A & 0 & 24 \\
+    B & 0 & 16 \\
+    C & 16 & 0\\
+\end{tabular}
+\end{center}
+
+Following the above equation and the values from the table and the above Q 
+matrix we get
+
+\begin{center}
+Q=
+\begin{tabular}{c|cc}
+    & Down & Up\\\hline
+    A & 14.5 & 24 \\
+    B & 6 & 16 \\
+    C & 16 & 10\\
+\end{tabular}
+\end{center}
 
 
 \end{document}

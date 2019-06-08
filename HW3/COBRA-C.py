@@ -18,6 +18,8 @@ def solve(targets,
     targets            : number of targets
     defender_resources : number of resources that defender has
     attacker_resources : number of resources that attacker has
+    alpha              : observational uncertainty
+    epsilon            : attacker's bounded rationality
     ptype              : type of problem: {MILP,LP,ILP,etc}
     minimax            : sets problem to maximization or minimization
     """
@@ -172,7 +174,7 @@ def readfile(filename:str, d:str=','):
 
 def print_usage():
     r""" Prints file usage """
-    print("usage: MILP.py -p <parameter file> -i <payoff file> -o <output file>")
+    print("usage: COBRA-C.py -p <parameter file> -i <payoff file> -o <output file>")
     print("-p, --params\t sets the parameter file")
     print("-i, --payoff\t sets the payoff file")
     print("-o, --output\t sets the output file. Defaults to out.csv")
