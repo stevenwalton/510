@@ -25,11 +25,6 @@ def solve(targets,
     M = 9999
 
     p = cplex.Cplex()
-    #if ptype in ("milp", "MILP"):
-    #    p.set_problem_type(cplex.Cplex.problem_type.MILP)
-    #else:
-    #    print("Problem type:",ptype,"is not currently supported")
-    #    exit(1)
 
     if minimax in ("max","maximize"):
         p.objective.set_sense(p.objective.sense.maximize)
@@ -39,7 +34,6 @@ def solve(targets,
         print("Only solves maximization or minimization problems")
 
     num_targets = len(targets)
-    # v is the z's, x's, v_def, and v_att
     v = ["z"+str(t) for t in range(num_targets)] \
         + ["q"+str(t) for t in range(num_targets)] \
         + ["x"+str(t) for t in range(num_targets)] \
@@ -68,13 +62,6 @@ def solve(targets,
                     names = v,      # Variable names
                     types = ctypes, # Types
                     )
-    # z_i \in {0,1} Set all z_i to integer values
-    #[p.variables.set_types([("z"+str(t),p.variables.type.integer)]) for t in range(num_targets)]
-    ## x_i \in [0,1] Set all x_i to continuous values
-    #[p.variables.set_types([("x"+str(t),p.variables.type.continuous)]) for t in range(num_targets)]
-    ## Also set for attacker and defender
-    #p.variables.set_types([("v_def",p.variables.type.continuous)])
-    #p.variables.set_types([("v_att",p.variables.type.continuous)])
 
     init_params = np.array([1.,1.,defender_resources])
     util_attUncov = [payoff[i][2] for i in range(num_targets)]
@@ -84,7 +71,6 @@ def solve(targets,
     util_perceived = [alpha/num_targets +(0*i) for i in range(num_targets)]
     util_worst = [payoff[i][1] + M for i in range(num_targets)]
 
-    #rhs = np.hstack((init_params, util_du, util_dc, util_ac))
     rhs = np.hstack((init_params, util_attUncov,util_attUncov2, util_eopt, util_eopt2, util_perceived, util_worst))
 
     senses = ["E","G","L"] \
@@ -171,7 +157,6 @@ def write_solution(offset:int,
                    outfile:str="out.csv", 
                    delimiter:str=','):
     r""" Function to write solution to file """
-    #to_print = solution[int(offset):offset+num_targets]
     length = offset + num_targets
     it = 0
     with open(outfile,'w') as _file:
