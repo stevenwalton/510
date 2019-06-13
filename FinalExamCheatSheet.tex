@@ -1,0 +1,212 @@
+\documentclass[12pt,letter]{article}
+\usepackage{geometry}\geometry{top=0.19in,bottom=0.19in,left=0.19in,right=0.19in}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{xcolor}	% Color words
+%\usepackage{cancel}	% Crossing parts of equations out
+\usepackage{tikz}    	% Drawing 
+\usetikzlibrary{positioning} % prevent stuff from overlapping
+\usetikzlibrary{calc}   % 
+\usepackage{pgfplots}   % Other plotting
+\usepgfplotslibrary{colormaps,fillbetween}
+\usepackage{placeins}   % Float barrier
+\usepackage{hyperref}   % Links
+\usepackage{tikz-qtree} % Trees
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{multicol}
+\usepackage{listings}
+
+\begin{document}
+\begin{multicols}{2}
+\textbf{Normal-Form Games:} Matrix representation of a game
+- Strategy dominance
+- Iterated dominance
+- Nash equilibrium
+
+\textbf{Extensive-Form Games:}
+
+\textbf{Security Games:}
+
+Entries: $C_T^KT=\frac{T!}{K!(T-K)}$ $K=$number of resources, $T=$ number of targets. 
+$K\leq T$
+
+\textbf{Behavioral Game Theory:}
+
+BRASS: Bounded rationality ($\epsilon$). Think like ORIGAMI but within an
+$\epsilon$ bound. $EU_{att}(t_i) \geq EU_{att}(t_j) + \epsilon$
+
+\textit{Assumption:} Attacker perceives any $\epsilon$-difference in utility and
+plays utility maximizing strategy.
+
+\begin{align*}
+    &\max_{v,x,z,q}v_def\\
+    s.t.&z_t\in\{0,1\}\forall t\\
+    &\Sigma z_t = 1\\
+    &q_t\in\{0,1\}\forall t\\
+    &\Sigma q_t\geq 1\\
+    &x_t\in[0,1]\forall t\\
+    &\Sigma x_t\leq K\\
+    &0\leq v_{att}-U_{att}(t,x_t)\leq(1-z_t)M,\forall t\\
+    &\epsilon(1-q_t)\leq v_{att} - U_{att}(t,x_t)\leq\epsilon + (1-q_t)M,\forall t\\
+    &v_{def} - U_{def}(t,x_t)\leq(1-q_t)M,\forall t
+\end{align*}
+
+GUARD: observation uncertainty (anchoring bias) (Continuation from BRASS)
+No observation may lead to \textbf{anchoring bias} on uniform distribution.
+Optimize against attacker's belief $x_t'=\alpha\frac{1}{N}+(1-\alpha)x_t$ 
+($N=$\#targets, $\alpha$ decreases with \# observations)
+\begin{align*}
+    &\max_{v,x,z} v_{def}\\
+    s.t.& z_t\in\{0,1\}\forall t\\
+    &\Sigma_t z_t = 1\\
+    &x_t \in [0,1], \forall t\\
+    &\Sigma_t x_t \leq K\\
+    &0\leq v_{att} - U_{att}(t,x_t')\leq (1-z_t) M,\forall t\\
+    &x_t' = \alpha \frac1N + (1-\alpha) x_t, \forall t\\
+    &v_{def} - U_{def}(t,x_t) \leq (1-z_t) M, \forall t
+\end{align*}
+
+Quantal Response: $\lambda$
+$q(t_t,x) = \frac{e^{\lambda U_{att}(t_i,x)}}{\Sigma_j e^{\lambda U_{att}(t_j,x)}}$
+$\lambda$ is the error level (rationality of attacker; $\lambda=0$: attacks
+targets uniformly; $\lambda=\inf$: perfectly rational)
+
+Subjective Utility: Linear comb of features and a weight for the attacker's
+preference. $SU_{att}(t_i,\vec{x}) = \Sigma w_if_i(t_i)$ \textit{replace Quantal
+Response s/U/SU/g, $\lambda=1$}
+
+\includegraphics[width=0.2\textwidth]{RiskAdverse.png}
+\includegraphics[width=0.2\textwidth]{RiskNeutral.png}
+\includegraphics[width=0.2\textwidth]{RiskSeeking.png}
+
+Prospect Theory: How to decide btwn alternatives that involve risks and uncertainty.
+Value function: values of outcome. Weight function: perceived probabilities.
+
+\includegraphics[width=0.4\textwidth]{Prospect.png}
+
+Risk aversion: \textit{convexity}. 
+
+Endowment effect: value things we own more highly. Loss is strong.
+
+\includegraphics[width=0.4\textwidth]{ProbWeight.png}
+
+$\pi(p) = \frac{p^\gamma}{(p^\gamma + (1-p)^\gamma)^\frac{1}{\gamma}}$
+
+Underweight of high probability. Overweight of small probability.
+
+\textbf{Expected Utility:}
+
+$U_{att}(t_i,\vec{x} = U_{att}^{uncov} (1-x_{t_i}) + U_{att}^{cov} x_{t_i}$
+
+\textbf{Prospect Utility:}
+
+$U_{att}^{PT} (t_i,\vec{x}) = V(U_{att}^{uncov}) \pi(1-x_{t_i}) + V(U_{att}^{cov}) \pi(x_{t_i})$
+
+\textbf{Multi-Agent Learning:}
+
+$Q(s_t,a_t) = (1-\alpha)Q(s_t,a_t) + \alpha(r_t + \gamma\max\limits_{a'}Q(s_{t+1},a')$
+
+Eg: where $\alpha=\frac12$, $\gamma=\frac12$
+
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    $s_t$ & $a_t$ & $s_{t+1}$ & $r_t$ \\\hline
+    A & D & B & 2\\\hline
+    B & D & C & 3\\\hline
+\end{tabular}
+
+$Q(A,D) = (1-\frac12)0 + \frac12(2 + \frac12\max\limits_{a'\in\{D,U\}}Q(B,a'))=1.$
+
+$Q(B,D) = (1-\frac12)0 + \frac12(3 + \frac12\max\limits_{a'\in\{D,U\}}Q(C,a'))=1.5$
+
+$Q(s_t,a_t)=0\because$ we have no stored value in that element of the matrix
+(initialized to 0). $2/3\because$ that is the reward in the table. In both
+cases the $\max\limits_{a'}=0\because$ again there were no values in the states
+(B then C) and so the best action we could take would give us $0$ reward. 
+
+\textbf{Nash Equilibrium:} Players do not want to deviate from their actions even
+when the other player changes their strategy. \textit{NE is actions not a cell}
+
+Using \textit{Transition and Reward} functions $\hat{T}(s,a,s')$ and $\hat{R}(s,a,s')$
+$\hat{T}$ we look up chance of going to state $s'$ from iterated $Q(s_t,a_t)$. 
+$\hat{R}$ we just lookup on the table.
+
+\textbf{Optimal Policy:}
+$\hat{V}^{\pi_0}(s) = \hat{T}(s,\pi{s},s')(\hat{R}(s,a,s') + \gamma\hat{V}^{\pi_0}(s)$
+
+Eg:
+
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+    a & a & $s'$ & $\hat{T}$ & $\hat{R}$\\\hline
+    A & U & A & 1 & 12\\\hline
+    A & D & B & $\frac12$ & 2 \\\hline
+    B & U & B & 1 & 8\\\hline
+    B & D & C & 1 & -6\\\hline
+    C & D & C & 1 & 12\\\hline
+\end{tabular}
+
+$\hat{V}^{\pi_0}(B) = \hat{T}(B,\pi_0(B),B)(8 + \frac12 V^{\pi_0}(B)=8 + \frac12 V^{\pi_0}(B)$ 
+
+$= 8 \frac{1}{1-\frac12}=16$ ($1+x+x^2\cdots = \frac{1}{1-x}$)
+
+
+
+Mixed-Nash Equilibrium ex:
+
+\begin{tabular}{|c|c|c|}
+    \hline
+    & Party & $\neg$Party\\\hline
+    Clown & (6,0) & (1,1)\\\hline
+    $\neg$Clown & (4,4) & (2,3)\\\hline
+\end{tabular}
+
+$0p + (1-p)4 = 1p + (1-p)3$ Solve for p. This gives us $(\frac12 Clown,\frac12\neg Clown)$
+
+$6q + (1-q)1 = 4q + (1-q)2$ Solve for q. This gives us $(\frac13 Party, \frac23\neg Party)$
+
+\textbf{ORIGAMI}: Lower everything. First set highest equal to the utility of 
+the next highest attacher's undefended utility. 
+
+Eg:
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+     & $t_1$ & $t_2$ & $t_3$ & $t_4$\\\hline
+     Covered & (1,0) & (3,0) & (8,0) & (8,1)\\\hline
+     Uncovered & (-1,1) & (0,2) & (0,4) & (-4,4)\\\hline
+\end{tabular}
+
+$ -1r_4 + (1-r_4)4 = 0r_3 + (1-r_3)4 = 2$
+
+We set 2 here because it is the next lowest, on $t_2$. If we have resources 
+left over then we include $t_2$ and do
+
+$ -1r_4 + (1-r_4)4 = 0r_3 + (1-r_3)4 = 0r_2 + (1-r_2)2 = 0$
+
+and solve with $r_2 + r_3 + r_4 = n_{resources}$. Set everything in terms of one
+variable and then plug in here.
+
+\textbf{Normal Form Game} RPS example
+
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    & Paper & Rock & Scissor\\\hline
+    Paper & (0,0) & (7,-7) & (-1,1)\\\hline
+    Rock & (-7,7) & (0,0) & (2,-2)\\\hline
+    Scissor & (1,-1) & (-2,2) & (0,0)\\\hline
+\end{tabular}
+
+We use the form $1-p_1-p_2$. So something like 
+$P_2(paper) = p_10 + 7p_2 - (1-p_1-p_2) = -1 + p_1 + 8p_2$
+Follow similar pattern. Then let $P_2(paper) = P_2(Rock) = P_2(Scissor)$ and solve
+for probabilities.
+
+\textbf{Extensive Form Game:} Tree representation is node is state and branch
+is action. Final branch is terminating action. Leaf is reward. 
+
+
+
+\end{multicols}
+\end{document}
