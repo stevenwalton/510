@@ -1,5 +1,5 @@
-\documentclass[12pt,letter]{article}
-\usepackage{geometry}\geometry{top=0.19in,bottom=0.19in,left=0.19in,right=0.19in}
+\documentclass[10pt,letter]{article}
+\usepackage{geometry}\geometry{top=0.15in,bottom=0.15in,left=0.15in,right=0.15in}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
@@ -17,20 +17,132 @@
 \usepackage{subcaption}
 \usepackage{multicol}
 \usepackage{listings}
+\setlength\parindent{0pt} % No indenting
 
 \begin{document}
 \begin{multicols}{2}
-\textbf{Normal-Form Games:} Matrix representation of a game
-- Strategy dominance
-- Iterated dominance
-- Nash equilibrium
+\textbf{Mixed-Nash Equilibrium eg:}
 
-\textbf{Extensive-Form Games:}
+\begin{tabular}{|c|c|c|}
+    \hline
+    & Party & $\neg$Party\\\hline
+    Clown & (6,0) & (1,1)\\\hline
+    $\neg$Clown & (4,4) & (2,3)\\\hline
+\end{tabular}
+
+$0p + (1-p)4 = 1p + (1-p)3$ Solve for p. This gives us $(\frac12 Clown,\frac12\neg Clown)$
+
+$6q + (1-q)1 = 4q + (1-q)2$ Solve for q. This gives us $(\frac13 Party, \frac23\neg Party)$
+
+\textbf{Normal-Form Games:} Matrix representation of a game
+Strategy dominance
+Iterated dominance
+Nash equilibrium
+Pareto Optimality: Optimal from point of view of an outside observer
+Strictly dominant: $>$ for any strat profile of other players. Weakly dom: $>$ for
+at least one strat profile. Very weak dom: $\geq$
+
+\textbf{ORIGAMI}: Lower everything. First set highest equal to the utility of 
+the next highest attacher's undefended utility. 
+
+Eg:
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+     & $t_1$ & $t_2$ & $t_3$ & $t_4$\\\hline
+     Covered & (1,0) & (3,0) & (8,0) & (8,1)\\\hline
+     Uncovered & (-1,1) & (0,2) & (0,4) & (-4,4)\\\hline
+\end{tabular}
+
+$ -1r_4 + (1-r_4)4 = 0r_3 + (1-r_3)4 = 2$
+
+We set 2 here because it is the next lowest, on $t_2$. If we have resources 
+left over then we include $t_2$ and do
+
+$ -1r_4 + (1-r_4)4 = 0r_3 + (1-r_3)4 = 0r_2 + (1-r_2)2 = 0$
+
+and solve with $r_2 + r_3 + r_4 = n_{resources}$. Set everything in terms of one
+variable and then plug in here.
+
+\textbf{Normal Form Game} RPS example
+
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    & Paper & Rock & Scissor\\\hline
+    Paper & (0,0) & (7,-7) & (-1,1)\\\hline
+    Rock & (-7,7) & (0,0) & (2,-2)\\\hline
+    Scissor & (1,-1) & (-2,2) & (0,0)\\\hline
+\end{tabular}
+
+We use the form $1-p_1-p_2$. So something like 
+$P_2(paper) = p_10 + 7p_2 - (1-p_1-p_2) = -1 + p_1 + 8p_2$
+Follow similar pattern. Then let $P_2(paper) = P_2(Rock) = P_2(Scissor)$ and solve
+for probabilities.
+
+\textbf{Extensive Form Game:} Tree representation is node is state and branch
+is action. Final branch is terminating action. Leaf is reward. 
+$G=(N,A,H,Z,\chi,\rho,\sigma,u)$ $N=$set of players; $A=$set of actions, $H=$set 
+of non-terminal choice nodes. $Z=$set of terminal nodes (disjoint from $H$
+$\chi:G\to 2^A$ action function which assigns to each choice node a set
+of possible actions. $\rho:H\to N$ player function which assigns each choide
+node a player $i\in N$ who chooses an action at that node. $\sigma:H x A\to H\cup Z$
+is the successor function. Maps a choice node and action to new choice node
+$u=(u_1,\cdots,u_n)$ where $u_i:Z\to\mathbb{R}$ is real valued utility for player
+$i$ on terminal nodes $Z$
+
+\includegraphics[width=0.5\textwidth]{EFG.png}
+
+
+\includegraphics[width=0.4\textwidth]{RealizationPlan.png}
+
+Realization plan for player 1
+\begin{align*}
+    &r_1(\null) = 1, r_1(L) + r_1(R) = r_1(\null)\\
+    &r_1(Ll) + r_1(Lr) = r_1(L)\\
+    &r_1(\null),r_1(L), r_1(R) \geq 0\\
+    &r_1(Ll), r_1(Lr) \geq 0
+\end{align*}
+
+Behavioral Strat for player 1
+\begin{align*}
+    &\beta_1(L) = r_1(L), \beta_1(R)=r_1(R)\\
+    &\beta_1(l) = \frac{r_1(Ll)}{r_1(L)}, \beta_1(r)=\frac{r_1(Lr)}{r_1(L)}
+\end{align*}
+
 
 \textbf{Security Games:}
 
 Entries: $C_T^KT=\frac{T!}{K!(T-K)}$ $K=$number of resources, $T=$ number of targets. 
-$K\leq T$
+$K\leq T$ Compact form is size $4T$
+
+Stackelberg Security Games (SSGs): Limited resource allocation, defender commits
+to a (mixed) strategy, attacker observes and responds
+
+    Attacker: $U_{att}^{cov}(t_i) < U_{att}^{uncov}(t_i)$
+
+    Defender: $U_{def}^{cov}(t_i) > U_{def}^{uncov}(t_i)$
+
+Strong SSE: Attacker plays a best response against defender's mixed strat. When
+ties exist, attacker chooses optimal strategy \textit{for the defender}
+
+A pair of strategies $(x,BR_{att}(x))$ forms a SSE IFF
+\begin{itemize}
+    \item defender plays a best response $EU_{def}(x,BR_{att}(x)) \geq EU_{def}(x',BR_{att}(x'))\forall x'$
+    \item Attacker plays best response $EU_{att}(x,BR_{att}(x)) \geq EU_{att}(x,t_i) \forall t_i$
+    \item Attacker breaks ties in favor of defender
+\end{itemize}
+Theorem: SSE \textbf{always} exists
+
+Weak SSG: a pair of strategies $(x,BR_{att}(x))$ forms a weak SE IFF
+\begin{itemize}
+    \item defender plays a best response $EU_{def}(x,BR_{att}(x)) \geq EU_{def}(x',BR_{att}(x'))\forall x'$
+    \item Attacker plays best response $EU_{att}(x,BR_{att}(x)) \geq EU_{att}(x,t_i) \forall t_i$
+    \item Attacker does \textbf{not} break ties in favor of defender. Attacker chooses 
+        strategy which is \textbf{worst} for defender
+\end{itemize}
+    Theorem: Weak SSE does \textbf{not} always exist.
+
+Note: Nash strategies ARE NOT Stackelberg strategies. In zero-sum security games
+Maximin, Minimax, Nash, and Stackelberg strats are equivalent.
 
 \textbf{Behavioral Game Theory:}
 
@@ -39,7 +151,6 @@ $\epsilon$ bound. $EU_{att}(t_i) \geq EU_{att}(t_j) + \epsilon$
 
 \textit{Assumption:} Attacker perceives any $\epsilon$-difference in utility and
 plays utility maximizing strategy.
-
 \begin{align*}
     &\max_{v,x,z,q}v_def\\
     s.t.&z_t\in\{0,1\}\forall t\\
@@ -52,11 +163,10 @@ plays utility maximizing strategy.
     &\epsilon(1-q_t)\leq v_{att} - U_{att}(t,x_t)\leq\epsilon + (1-q_t)M,\forall t\\
     &v_{def} - U_{def}(t,x_t)\leq(1-q_t)M,\forall t
 \end{align*}
-
-GUARD: observation uncertainty (anchoring bias) (Continuation from BRASS)
+GUARD/COBRA: observation uncertainty (anchoring bias) (Continuation from BRASS)
 No observation may lead to \textbf{anchoring bias} on uniform distribution.
 Optimize against attacker's belief $x_t'=\alpha\frac{1}{N}+(1-\alpha)x_t$ 
-($N=$\#targets, $\alpha$ decreases with \# observations)
+($N=$\#targets, $\alpha\in [0,1]$ decreases with \# observations)
 \begin{align*}
     &\max_{v,x,z} v_{def}\\
     s.t.& z_t\in\{0,1\}\forall t\\
@@ -77,9 +187,9 @@ Subjective Utility: Linear comb of features and a weight for the attacker's
 preference. $SU_{att}(t_i,\vec{x}) = \Sigma w_if_i(t_i)$ \textit{replace Quantal
 Response s/U/SU/g, $\lambda=1$}
 
-\includegraphics[width=0.2\textwidth]{RiskAdverse.png}
-\includegraphics[width=0.2\textwidth]{RiskNeutral.png}
-\includegraphics[width=0.2\textwidth]{RiskSeeking.png}
+\includegraphics[width=0.16\textwidth]{RiskAdverse.png}
+\includegraphics[width=0.16\textwidth]{RiskNeutral.png}
+\includegraphics[width=0.16\textwidth]{RiskSeeking.png}
 
 Prospect Theory: How to decide btwn alternatives that involve risks and uncertainty.
 Value function: values of outcome. Weight function: perceived probabilities.
@@ -152,59 +262,24 @@ $\hat{V}^{\pi_0}(B) = \hat{T}(B,\pi_0(B),B)(8 + \frac12 V^{\pi_0}(B)=8 + \frac12
 
 $= 8 \frac{1}{1-\frac12}=16$ ($1+x+x^2\cdots = \frac{1}{1-x}$)
 
+\textbf{Exploration:} $f(u,n)=u + \frac{k}{n}$ where $u=$utility, $n=$\#visits,
+$k=$some const. Replace when calculating values (this offsets).
+
+Random exploration has higher regret than exploration function.
+
+MDP: given a present state, the future and the past are independent.
+
+Value Iteration 
+
+$V_{k+1}(s) \gets \max_a\Sigma_{s'}T(s,a,s')[R(s,a,s') + \gamma V_k(s')]$
+Complexity $O(S^2A)$
+
+Policy Iteration:
+
+Evaluation $V_{k+1}^{\pi_i}(s)\gets\Sigma_{s'}T(s,\pi_i(s),s')[R(s,\pi_i(s),s')+\gamma V_k^{\pi_i}(s')]$
+Improvement with one step lookahead
 
 
-Mixed-Nash Equilibrium ex:
-
-\begin{tabular}{|c|c|c|}
-    \hline
-    & Party & $\neg$Party\\\hline
-    Clown & (6,0) & (1,1)\\\hline
-    $\neg$Clown & (4,4) & (2,3)\\\hline
-\end{tabular}
-
-$0p + (1-p)4 = 1p + (1-p)3$ Solve for p. This gives us $(\frac12 Clown,\frac12\neg Clown)$
-
-$6q + (1-q)1 = 4q + (1-q)2$ Solve for q. This gives us $(\frac13 Party, \frac23\neg Party)$
-
-\textbf{ORIGAMI}: Lower everything. First set highest equal to the utility of 
-the next highest attacher's undefended utility. 
-
-Eg:
-\begin{tabular}{|c|c|c|c|c|}
-    \hline
-     & $t_1$ & $t_2$ & $t_3$ & $t_4$\\\hline
-     Covered & (1,0) & (3,0) & (8,0) & (8,1)\\\hline
-     Uncovered & (-1,1) & (0,2) & (0,4) & (-4,4)\\\hline
-\end{tabular}
-
-$ -1r_4 + (1-r_4)4 = 0r_3 + (1-r_3)4 = 2$
-
-We set 2 here because it is the next lowest, on $t_2$. If we have resources 
-left over then we include $t_2$ and do
-
-$ -1r_4 + (1-r_4)4 = 0r_3 + (1-r_3)4 = 0r_2 + (1-r_2)2 = 0$
-
-and solve with $r_2 + r_3 + r_4 = n_{resources}$. Set everything in terms of one
-variable and then plug in here.
-
-\textbf{Normal Form Game} RPS example
-
-\begin{tabular}{|c|c|c|c|}
-    \hline
-    & Paper & Rock & Scissor\\\hline
-    Paper & (0,0) & (7,-7) & (-1,1)\\\hline
-    Rock & (-7,7) & (0,0) & (2,-2)\\\hline
-    Scissor & (1,-1) & (-2,2) & (0,0)\\\hline
-\end{tabular}
-
-We use the form $1-p_1-p_2$. So something like 
-$P_2(paper) = p_10 + 7p_2 - (1-p_1-p_2) = -1 + p_1 + 8p_2$
-Follow similar pattern. Then let $P_2(paper) = P_2(Rock) = P_2(Scissor)$ and solve
-for probabilities.
-
-\textbf{Extensive Form Game:} Tree representation is node is state and branch
-is action. Final branch is terminating action. Leaf is reward. 
 
 
 
